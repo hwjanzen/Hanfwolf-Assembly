@@ -34,11 +34,30 @@ Local development is powered by [the Shopify CLI](https://shopify.dev/docs/apps/
 
 ## Hanfwolf Assembly deployment
 
-This project uses a separate Shopify app registration and Render service from the VP app. The Shopify config is intentionally unlinked; link it to the new `Hanfwolf-Assembly` app with `shopify app config link` before deploying, and use only that app's credentials in Render.
+This project uses a separate Shopify app registration and Render service from the VP app. The Shopify config is linked to the `Hanfwolf-Assembly` app; use only that app's credentials in Render.
 
-The config currently assumes `https://hanfwolf-assembly.onrender.com`. If Render assigns a different URL, update `application_url`, the authentication redirect URLs, the app proxy URL in `shopify.app.toml`, and `SHOPIFY_APP_URL` in Render to match.
+The public Render URL is `https://hanfwolf-assembly-dwlt.onrender.com`. If it changes, update `application_url`, the authentication redirect URLs, the app proxy URL in `shopify.app.toml`, and `SHOPIFY_APP_URL` in Render to match. Publish Shopify configuration changes with `shopify app deploy`; a Render deploy alone does not update them.
 
 ## Hanfwolf Assembly Workflow (Custom Variant Prices)
+
+### Surface definitions
+
+On authentication and when opening the app home, the bootstrap creates missing
+merchant-owned definitions for `enattoberflaeche` (display name `enAttOberfläche`,
+optional single-line text field `value`) and the single product reference
+`custom.oberflaeche`. Both definitions allow Storefront API reads. Existing
+definitions are checked for compatible types, reference target, display field
+and storefront access; conflicts are logged by the bootstrap callers without
+overwriting existing definitions.
+
+This runs separately before the pricing bootstrap, so a failure in one does not
+prevent the other from running. Errors are recorded in the server logs and retried
+on the next app-home load. It does not migrate
+`custom.oberflache`, copy entries, assign product values, constrain definitions
+to the Seile category, or configure Search & Discovery filters. Create entries
+and assign them to products in Shopify, then select the product metafield as a
+filter in Search & Discovery. Admin API filtering is a separate capability and
+is not enabled by this bootstrap.
 
 ### Wann welche Befehle ausfuehren
 

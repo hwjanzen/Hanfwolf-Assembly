@@ -1,7 +1,7 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
 name = "Hanfwolf-Assembly"
-application_url = "https://hanfwolf-assembly.onrender.com"
+application_url = "https://hanfwolf-assembly-dwlt.onrender.com"
 embedded = true
 client_id = "f4e6ce06b814ce438e763a06be66307b"
 
@@ -12,7 +12,7 @@ optional_scopes = [ ]
 use_legacy_install_flow = false
 
 [auth]
-redirect_urls = [ "https://hanfwolf-assembly.onrender.com/auth/callback", "https://hanfwolf-assembly.onrender.com/auth/shopify/callback", "https://hanfwolf-assembly.onrender.com/api/auth/callback" ]
+redirect_urls = [ "https://hanfwolf-assembly-dwlt.onrender.com/auth/callback", "https://hanfwolf-assembly-dwlt.onrender.com/auth/shopify/callback", "https://hanfwolf-assembly-dwlt.onrender.com/api/auth/callback" ]
 
 [webhooks]
 api_version = "2026-10"
@@ -26,6 +26,6 @@ api_version = "2026-10"
   topics = [ "app/scopes_update" ]
 
 [app_proxy]
-url = "https://hanfwolf-assembly.onrender.com/apps/hanfwolf-pricing"
+url = "https://hanfwolf-assembly-dwlt.onrender.com/apps/hanfwolf-pricing"
 subpath = "hanfwolf-pricing"
 prefix = "apps"

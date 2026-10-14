@@ -6,7 +6,10 @@ import {
 } from "@shopify/shopify-app-react-router/server";
 import { PrismaSessionStorage } from "@shopify/shopify-app-session-storage-prisma";
 import prisma from "./db.server";
-import { ensurePricingBootstrap } from "./services/pricing-bootstrap.server";
+import {
+  ensurePricingBootstrap,
+  ensureSurfaceDefinitions,
+} from "./services/pricing-bootstrap.server";
 
 const shopify = shopifyApp({
   apiKey: process.env.SHOPIFY_API_KEY,
@@ -22,6 +25,18 @@ const shopify = shopifyApp({
   },
   hooks: {
     afterAuth: async ({ admin, session }) => {
+      try {
+        const definitions = await ensureSurfaceDefinitions(admin);
+        console.info("Surface definitions bootstrap finished", {
+          shop: session.shop,
+          definitions,
+        });
+      } catch (error) {
+        console.error("Surface definitions bootstrap failed", {
+          shop: session.shop,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
       try {
         const bootstrap = await ensurePricingBootstrap(admin);
         console.info("Pricing bootstrap finished", {

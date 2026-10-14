@@ -13,6 +13,11 @@ type UserError = {
 
 type BootstrapStatus = "created" | "exists";
 
+type SurfaceDefinitionsResult = {
+  metaobject: BootstrapStatus;
+  productMetafield: BootstrapStatus;
+};
+
 export type BootstrapResult = {
   headerDefinition: BootstrapStatus;
   lineDefinition: BootstrapStatus;
@@ -417,6 +422,162 @@ export async function ensureRopeDefaultConfigurationMetafieldDefinition(
   }
 
   return "created";
+}
+
+export async function ensureSurfaceDefinitions(
+  admin: unknown,
+): Promise<SurfaceDefinitionsResult> {
+  const existingResult = await adminGraphql<{
+    metaobjectDefinitionByType: {
+      id: string;
+      displayNameKey: string | null;
+      access: { storefront: string };
+      fieldDefinitions: Array<{ key: string; type: { name: string }; required: boolean }>;
+    } | null;
+    metafieldDefinitions: {
+      nodes: Array<{
+        type: { name: string };
+        access: { storefront: string };
+        validations: Array<{ name: string; value: string }>;
+      }>;
+    };
+  }>(
+    admin,
+    `#graphql
+    query BootstrapSurfaceDefinitions {
+      metaobjectDefinitionByType(type: "enattoberflaeche") {
+        id
+        displayNameKey
+        access { storefront }
+        fieldDefinitions { key type { name } required }
+      }
+      metafieldDefinitions(
+        first: 1
+        ownerType: PRODUCT
+        namespace: "custom"
+        key: "oberflaeche"
+      ) {
+        nodes {
+          type { name }
+          access { storefront }
+          validations { name value }
+        }
+      }
+    }`,
+  );
+  if (!existingResult.ok) {
+    throw new Error(`Failed to read surface definitions: ${existingResult.errors.join(" | ")}`);
+  }
+
+  const existingMetaobject = existingResult.data.metaobjectDefinitionByType;
+  const existingMetafield = existingResult.data.metafieldDefinitions.nodes[0];
+  if (existingMetaobject) {
+    const valueField = existingMetaobject.fieldDefinitions.find((field) => field.key === "value");
+    if (
+      valueField?.type.name !== "single_line_text_field" ||
+      valueField.required ||
+      existingMetaobject.displayNameKey !== "value" ||
+      existingMetaobject.access.storefront !== "PUBLIC_READ"
+    ) {
+      throw new Error(
+        "Metaobject enattoberflaeche exists with an incompatible definition. Expected optional single-line text field value, display name value and PUBLIC_READ storefront access. No existing definition was changed.",
+      );
+    }
+  }
+  if (
+    existingMetafield &&
+    (
+      !existingMetaobject ||
+      existingMetafield.type.name !== "metaobject_reference" ||
+      existingMetafield.access.storefront !== "PUBLIC_READ" ||
+      !existingMetafield.validations.some(
+        (validation) =>
+          validation.name === "metaobject_definition_id" &&
+          validation.value === existingMetaobject.id,
+      )
+    )
+  ) {
+    throw new Error(
+      "Product metafield custom.oberflaeche exists with an incompatible definition. Expected a single reference to enattoberflaeche with PUBLIC_READ storefront access. No existing definition was changed.",
+    );
+  }
+
+  let metaobjectId = existingMetaobject?.id;
+  if (!metaobjectId) {
+    const result = await adminGraphql<{
+      metaobjectDefinitionCreate: {
+        metaobjectDefinition: { id: string } | null;
+        userErrors: UserError[];
+      };
+    }>(
+      admin,
+      `#graphql
+      mutation BootstrapCreateSurfaceMetaobject($definition: MetaobjectDefinitionCreateInput!) {
+        metaobjectDefinitionCreate(definition: $definition) {
+          metaobjectDefinition { id }
+          userErrors { field message code }
+        }
+      }`,
+      {
+        definition: {
+          name: "enAttOberfläche",
+          type: "enattoberflaeche",
+          description: "Oberfläche",
+          displayNameKey: "value",
+          access: { storefront: "PUBLIC_READ" },
+          fieldDefinitions: [
+            { key: "value", name: "Value", type: "single_line_text_field", required: false },
+          ],
+        },
+      },
+    );
+    if (!result.ok) {
+      throw new Error(`Failed to create enattoberflaeche: ${result.errors.join(" | ")}`);
+    }
+    assertNoUserErrors(result.data.metaobjectDefinitionCreate.userErrors, "Create enattoberflaeche");
+    metaobjectId = result.data.metaobjectDefinitionCreate.metaobjectDefinition?.id;
+    if (!metaobjectId) throw new Error("Create enattoberflaeche returned no id.");
+  }
+
+  if (!existingMetafield) {
+    const result = await adminGraphql<{
+      metafieldDefinitionCreate: {
+        createdDefinition: { id: string } | null;
+        userErrors: UserError[];
+      };
+    }>(
+      admin,
+      `#graphql
+      mutation BootstrapCreateSurfaceProductMetafield($definition: MetafieldDefinitionInput!) {
+        metafieldDefinitionCreate(definition: $definition) {
+          createdDefinition { id }
+          userErrors { field message code }
+        }
+      }`,
+      {
+        definition: {
+          name: "Oberfläche",
+          namespace: "custom",
+          key: "oberflaeche",
+          ownerType: "PRODUCT",
+          type: "metaobject_reference",
+          access: { storefront: "PUBLIC_READ" },
+          validations: [{ name: "metaobject_definition_id", value: metaobjectId }],
+        },
+      },
+    );
+    if (!result.ok) {
+      throw new Error(`Failed to create custom.oberflaeche: ${result.errors.join(" | ")}`);
+    }
+    assertNoUserErrors(result.data.metafieldDefinitionCreate.userErrors, "Create custom.oberflaeche");
+    if (!result.data.metafieldDefinitionCreate.createdDefinition?.id) {
+      throw new Error("Create custom.oberflaeche returned no id.");
+    }
+  }
+  return {
+    metaobject: existingMetaobject ? "exists" : "created",
+    productMetafield: existingMetafield ? "exists" : "created",
+  };
 }
 
 export async function ensurePricingBootstrap(admin: any): Promise<BootstrapResult> {
