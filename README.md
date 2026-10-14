@@ -1,4 +1,4 @@
-# Shopify App Template - React Router
+# Hanfwolf Assembly - Shopify App (React Router)
 
 This is a template for building a [Shopify app](https://shopify.dev/docs/apps/getting-started) using [React Router](https://reactrouter.com/). It was forked from the [Shopify Remix app template](https://github.com/Shopify/shopify-app-template-remix) and converted to React Router.
 
@@ -32,7 +32,13 @@ Press P to open the URL to your app. Once you click install, you can start devel
 
 Local development is powered by [the Shopify CLI](https://shopify.dev/docs/apps/tools/cli). It logs into your account, connects to an app, provides environment variables, updates remote config, creates a tunnel and provides commands to generate extensions.
 
-## Hanfwolf Workflow (Custom Variant Prices)
+## Hanfwolf Assembly deployment
+
+This project uses a separate Shopify app registration and Render service from the VP app. The Shopify config is intentionally unlinked; link it to the new `Hanfwolf-Assembly` app with `shopify app config link` before deploying, and use only that app's credentials in Render.
+
+The config currently assumes `https://hanfwolf-assembly.onrender.com`. If Render assigns a different URL, update `application_url`, the authentication redirect URLs, the app proxy URL in `shopify.app.toml`, and `SHOPIFY_APP_URL` in Render to match.
+
+## Hanfwolf Assembly Workflow (Custom Variant Prices)
 
 ### Wann welche Befehle ausfuehren
 

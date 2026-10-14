@@ -1,5 +1,5 @@
 {
-  "name": "hello-world-app",
+  "name": "hanfwolf-assembly",
   "private": true,
   "scripts": {
     "build": "react-router build",
