@@ -9,7 +9,7 @@ const gid = (kind: string, id: number) => `gid://shopify/${kind}/${id}`;
 function metaobject(id: number, type: string, fields: Record<string, string>) {
   return {
     id: gid("Metaobject", id),
-    type: `app--123:${type}`,
+    type: `app--123--${type}`,
     fields: Object.entries(fields).map(([key, value]) => ({ key, value })),
   };
 }
@@ -36,6 +36,8 @@ function fixture() {
   });
   return {
     shop: { currencyCode: "EUR" },
+    positionDefinition: { type: "app--123--configuration_position" },
+    mappingDefinition: { type: "app--123--component_mapping" },
     product: {
       id: gid("Product", 1),
       title: "Seil A",
@@ -82,6 +84,88 @@ beforeEach(() => {
 });
 
 describe("explicit component mappings", () => {
+  it("uses the app-resolved definition types rather than assuming a type-name suffix", async () => {
+    const data = fixture();
+    data.positionDefinition.type = "resolved-position-type";
+    data.mappingDefinition.type = "resolved-mapping-type";
+    data.product.positions.references.nodes[0].type =
+      data.positionDefinition.type;
+    data.product.mappings.references.nodes[0].type =
+      data.mappingDefinition.type;
+    graphql
+      .mockResolvedValueOnce({ ok: true, data })
+      .mockResolvedValueOnce({ ok: true, data: { nodes: [component()] } });
+    expect(
+      (
+        await loadConfigurationProduct(
+          {},
+          gid("Product", 1),
+          DEFAULT_ROPE_CONFIG,
+        )
+      ).mappings,
+    ).toHaveLength(1);
+  });
+
+  it.each([
+    ["code", "Ende 1", "Code muss"],
+    ["required", "", "Pflichtauswahl muss"],
+    ["sort_order", "", "Sortierung muss"],
+    ["active", "", "Aktiv muss"],
+  ])(
+    "identifies the invalid position field %s",
+    async (key, value, message) => {
+      const data = fixture();
+      data.product.positions.references.nodes[0].fields.find(
+        (field) => field.key === key,
+      )!.value = value;
+      graphql.mockResolvedValueOnce({ ok: true, data });
+      await expect(
+        loadConfigurationProduct({}, gid("Product", 1), DEFAULT_ROPE_CONFIG),
+      ).rejects.toThrow(`Konfigurationsposition "Endverbindung 1": ${message}`);
+    },
+  );
+
+  it("rejects positions and mappings from a different definition", async () => {
+    for (const list of ["positions", "mappings"] as const) {
+      const data = fixture();
+      data.product[list].references.nodes[0].type = "merchant-owned-type";
+      graphql.mockResolvedValueOnce({ ok: true, data });
+      await expect(
+        loadConfigurationProduct({}, gid("Product", 1), DEFAULT_ROPE_CONFIG),
+      ).rejects.toThrow(
+        list === "positions"
+          ? "falsche Metaobjekt-Definition"
+          : "Komponentenfreigabe",
+      );
+    }
+  });
+
+  it("reports missing deployed app definitions", async () => {
+    graphql.mockResolvedValueOnce({
+      ok: true,
+      data: { ...fixture(), positionDefinition: null },
+    });
+    await expect(
+      loadConfigurationProduct({}, gid("Product", 1), DEFAULT_ROPE_CONFIG),
+    ).rejects.toThrow("App-Konfiguration deployen");
+  });
+
+  it("identifies duplicate position codes and labels", async () => {
+    const data = fixture();
+    const first = data.product.positions.references.nodes[0];
+    data.product.positions.references.nodes.push({
+      ...first,
+      id: gid("Metaobject", 2),
+    });
+    data.product.positions.value = JSON.stringify(
+      data.product.positions.references.nodes.map((entry) => entry.id),
+    );
+    graphql.mockResolvedValueOnce({ ok: true, data });
+    await expect(
+      loadConfigurationProduct({}, gid("Product", 1), DEFAULT_ROPE_CONFIG),
+    ).rejects.toThrow("Code ist doppelt; Bezeichnung ist doppelt");
+  });
+
   it("loads permitted real variants and their current prices and weights", async () => {
     graphql
       .mockResolvedValueOnce({ ok: true, data: fixture() })

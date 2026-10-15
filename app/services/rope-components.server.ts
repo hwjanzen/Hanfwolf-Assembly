@@ -50,6 +50,8 @@ type Product = {
 export const CONFIGURATION_PRODUCT_QUERY = `#graphql
   query ConfigurationProduct($id: ID!, $after: String) {
     shop { currencyCode }
+    positionDefinition: metaobjectDefinitionByType(type: "$app:configuration_position") { type }
+    mappingDefinition: metaobjectDefinitionByType(type: "$app:component_mapping") { type }
     product(id: $id) {
       id title handle productType status publishedAt
       positions: metafield(namespace: "$app", key: "configuration_positions") {
@@ -120,6 +122,8 @@ export async function loadConfigurationProduct(
 ) {
   const result = await adminGraphql<{
     shop: { currencyCode: string };
+    positionDefinition: { type: string } | null;
+    mappingDefinition: { type: string } | null;
     product: Product | null;
   }>(admin, CONFIGURATION_PRODUCT_QUERY, { id: productId });
   if (!result.ok)
@@ -135,6 +139,12 @@ export async function loadConfigurationProduct(
   if (product.status !== "ACTIVE" || !product.publishedAt) {
     throw new ConfigurationInputError(
       "Der Basisartikel muss im Onlineshop veroeffentlicht sein.",
+    );
+  }
+  const { positionDefinition, mappingDefinition } = result.data;
+  if (!positionDefinition || !mappingDefinition) {
+    throw new ConfigurationInputError(
+      "Die App-Definitionen fuer Konfigurationspositionen oder Komponentenfreigaben fehlen. Bitte die App-Konfiguration deployen.",
     );
   }
   // All candidates must be considered; a later page can contain the marked master.
@@ -175,22 +185,35 @@ export async function loadConfigurationProduct(
     const data = fields(entry);
     if (data.active === "false") continue;
     const sortOrder = Number(data.sort_order);
-    if (
-      !entry.type.endsWith(":configuration_position") ||
-      data.active !== "true" ||
-      !data.code ||
-      !/^[a-z][a-z0-9_]{0,49}$/.test(data.code) ||
-      !data.label ||
-      data.label.startsWith("_") ||
-      data.label.length > 80 ||
-      codes.has(data.code) ||
-      labels.has(data.label) ||
-      !["true", "false"].includes(data.required || "") ||
-      !Number.isSafeInteger(sortOrder)
-    )
-      throw new Error(
-        "Konfigurationspositionen sind ungueltig oder nicht eindeutig.",
+    const issues: string[] = [];
+    if (entry.type !== positionDefinition.type)
+      issues.push("falsche Metaobjekt-Definition");
+    if (data.active !== "true") issues.push("Aktiv muss Ja oder Nein sein");
+    if (!data.code || !/^[a-z][a-z0-9_]{0,49}$/.test(data.code)) {
+      issues.push(
+        "Code muss mit einem Kleinbuchstaben beginnen und darf nur a-z, 0-9 und _ enthalten (max. 50 Zeichen)",
       );
+    }
+    if (!data.label || data.label.startsWith("_") || data.label.length > 80) {
+      issues.push("Bezeichnung fehlt oder ist ungueltig");
+    }
+    if (data.code && codes.has(data.code)) issues.push("Code ist doppelt");
+    if (data.label && labels.has(data.label))
+      issues.push("Bezeichnung ist doppelt oder reserviert");
+    if (!["true", "false"].includes(data.required || ""))
+      issues.push("Pflichtauswahl muss Ja oder Nein sein");
+    if (
+      data.sort_order == null ||
+      data.sort_order.trim() === "" ||
+      !Number.isSafeInteger(sortOrder)
+    ) {
+      issues.push("Sortierung muss eine ganze Zahl sein");
+    }
+    if (issues.length || !data.code || !data.label) {
+      throw new ConfigurationInputError(
+        `Konfigurationsposition "${data.label || entry.id}": ${issues.join("; ")}.`,
+      );
+    }
     codes.add(data.code);
     labels.add(data.label);
     positions.push({
@@ -219,7 +242,7 @@ export async function loadConfigurationProduct(
     .filter((entry) => entry.active !== "false");
   for (const entry of rawMappings) {
     if (
-      !entry.type.endsWith(":component_mapping") ||
+      entry.type !== mappingDefinition.type ||
       entry.active !== "true" ||
       entry.base_product !== product.id ||
       !entry.position ||

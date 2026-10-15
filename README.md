@@ -272,6 +272,13 @@ umschreiben, aus dem aktiven Theme entfernen.
 
 #### Ablauf und Fehlerbehandlung
 
+Bei Positionsfehlern nennt die Antwort den betroffenen Eintrag und das Feld
+(z. B. Code, Pflichtauswahl oder Sortierung). Die Typpruefung verwendet die
+ueber `$app:configuration_position` und `$app:component_mapping` aufgeloesten
+Definitionen statt Annahmen ueber Shopifys interne Typnamen. Bei korrekt
+zugeordneten Eintraegen und der alten pauschalen Fehlermeldung das Backend
+aktualisieren; Metaobjekte nicht allein deshalb loeschen oder neu anlegen.
+
 - **Zuschnitt fertigstellen** sperrt die Eingaben und startet sofort die
   Vorbereitung. **Weiteren Zuschnitt hinzufuegen** ist danach verfuegbar,
   auch wenn Shopify noch vorbereitet. Es gibt keine zehn globalen Dummy-Slots.
