@@ -8,6 +8,7 @@ import {
   saveRopeConfiguratorSetup,
 } from "../services/rope-configurator-setup.server";
 import { adminGraphql } from "../services/shopify-graphql.server";
+import { initializeRopePositions } from "../services/rope-position-init.server";
 
 const AUTO_PRODUCT_TYPE = "__none__";
 
@@ -73,6 +74,13 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const { admin, session } = await authenticate.admin(request);
   const formData = await request.formData();
   try {
+    if (formData.get("intent") === "initialize-positions") {
+      const result = await initializeRopePositions(admin);
+      return {
+        ok: true,
+        message: `${result.created} Standardpositionen angelegt, ${result.reused} vorhandene beibehalten.`,
+      };
+    }
     const [productTypes, config] = await Promise.all([
       loadProductTypes(admin),
       getRopeConfiguratorConfig(session.shop),
@@ -145,6 +153,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
     return { ok: true, message: "Setup wurde gespeichert." };
   } catch (error) {
+    console.error("Rope configurator setup failed", error);
     return {
       ok: false,
       message:
@@ -169,6 +178,26 @@ export default function RopeConfiguratorSetupPage() {
 
   return (
     <s-page heading="RopeConfigurator Setup" inlineSize="base">
+      <fetcher.Form method="post">
+        <input type="hidden" name="intent" value="initialize-positions" />
+        <s-section heading="Standardpositionen initialisieren">
+          <s-stack direction="block" gap="base">
+            <s-paragraph>
+              Legt Endverbindung 1 (end_1), Endverbindung 2 (end_2) und
+              Aufmachung (presentation) als aktive, optionale Positionen an.
+              Vorhandene Einträge mit diesen Codes bleiben unverändert. Nach
+              einer Neuinstallation erneut ausführbar.
+            </s-paragraph>
+            <s-button
+              type="submit"
+              loading={isSubmitting}
+              disabled={isSubmitting}
+            >
+              Standardpositionen initialisieren
+            </s-button>
+          </s-stack>
+        </s-section>
+      </fetcher.Form>
       <fetcher.Form method="post">
         <s-section heading="Seil-Konfigurator">
           <s-stack direction="block" gap="base">
@@ -259,9 +288,10 @@ export default function RopeConfiguratorSetupPage() {
             <s-paragraph>
               Nach dem App-Deployment stehen unter Inhalte → Metaobjekte die
               Definitionen Konfigurationsposition und Konfigurationsfreigabe
-              bereit. Legen Sie Positionen wie Endverbindung 1, Endverbindung 2
-              und Aufmachung mit eindeutigem Code, Bezeichnung, Pflichtauswahl,
-              Sortierung und Aktivstatus an.
+              bereit. Initialisieren Sie die Standardpositionen mit dem Button
+              oben. Der technische Code wird vorgegeben, nicht frei eingegeben.
+              Bezeichnung, Pflichtauswahl, Sortierung und Aktivstatus können Sie
+              anschließend in Shopify anpassen.
             </s-paragraph>
             <s-paragraph>
               Jede Freigabe verbindet genau einen Basisartikel, eine Position

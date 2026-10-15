@@ -232,11 +232,22 @@ Es gibt keinen festen Haspelaufschlag.
 2. `npx shopify app config validate --json`, danach `npm run deploy`:
    Die Definitionen aus [shopify.app.toml](shopify.app.toml) werden installiert.
    Erforderliche Produktscopes, Inventar-Lesezugriff und Metaobjektzugriff autorisieren.
-3. Unter **Inhalte → Metaobjekte → Konfigurationsposition** Eintraege anlegen:
-   z. B. `end_1` / Endverbindung 1, `end_2` / Endverbindung 2 und
-   `presentation` / Aufmachung. Code und Bezeichnung muessen je Produkt eindeutig
-   sein; Bezeichnungen duerfen weder `Länge` sein noch mit `_` beginnen.
-   Pflichtauswahl, Sortierung (Ganzzahl) und Aktivstatus explizit setzen.
+3. Im **RopeConfigurator Setup → Standardpositionen initialisieren** klicken.
+   Die App legt `end_1` / Endverbindung 1, `end_2` / Endverbindung 2 und
+   `presentation` / Aufmachung aktiv und optional mit Sortierung 10/20/30 an.
+   Vorhandene Eintraege werden anhand ihres Codes wiederverwendet, nicht
+   ueberschrieben; fehlende werden ergaenzt. Nach einer Neuinstallation kann
+   der Button erneut verwendet werden. Produktzuordnungen und Komponentenfreigaben
+   werden dadurch nicht wiederhergestellt oder automatisch angelegt.
+   Das Code-Feld hat nach Deployment der App-Konfiguration diese drei festen
+   Auswahlwerte statt Freitext. Weitere Positionscodes fuer zukuenftige Produkte
+   erfordern eine Erweiterung der App-Definition und Initialisierung.
+   Vor Deployment vorhandene andere Codes pruefen: sie gehoeren nicht zur
+   neuen Auswahlliste und muessen bewusst migriert werden.
+   Unter **Inhalte → Metaobjekte → Konfigurationsposition** koennen Bezeichnung,
+   Pflichtauswahl, Sortierung und Aktivstatus angepasst werden. Code und
+   Bezeichnung muessen je Produkt eindeutig sein; Bezeichnungen duerfen weder
+   `Länge` sein noch mit `_` beginnen.
 4. Komponenten als reale Shopify-Produkte/-Varianten mit aktuellen Preisen und
    Versandgewichten pflegen. Versandfaehige Komponenten brauchen positives Gewicht.
    Eine kostenfreie Ring-Auswahl kann eine nicht versandfaehige 0-EUR-Komponente

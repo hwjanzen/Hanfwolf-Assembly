@@ -39,6 +39,7 @@ access.admin = "merchant_read_write"
 name = "Code"
 type = "single_line_text_field"
 required = true
+validations.choices = ["end_1", "end_2", "presentation"]
 
 [metaobjects.app.configuration_position.fields.label]
 name = "Bezeichnung"
