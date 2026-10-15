@@ -10,14 +10,14 @@
   var cutsContainer = form.querySelector("[data-rope-cuts]");
   var template = section && section.querySelector("[data-rope-cut-template]");
   var errorElement = form.querySelector("[data-rope-error]");
-  var prepareButton = form.querySelector("[data-prepare-rope]");
   var submitButton = form.querySelector("[data-rope-submit]");
-  var productId = script.dataset.productId;
+  var selectedVariantId = script.dataset.variantId;
+  var hasVariantChangeEvent = false;
   var cartUrl = script.dataset.cartUrl || "/cart";
   var configUrl = script.dataset.configUrl || "/apps/hanfwolf-pricing/config";
   var nextIndex = 0;
 
-  if (!section || !cutsContainer || !template || !errorElement || !prepareButton || !submitButton || !productId) {
+  if (!section || !cutsContainer || !template || !errorElement || !submitButton || !selectedVariantId) {
     return;
   }
 
@@ -29,20 +29,45 @@
 
   function getItems() {
     return Array.from(cutsContainer.querySelectorAll(".rope-cut")).map(function (cut) {
+      var lengthMeters = Number(cut.querySelector("[data-rope-length]").value);
+      var lengthDecimeters = Math.round(lengthMeters * 10);
       return {
-        productId: productId,
-        quantity: Number(cut.querySelector("[data-rope-quantity]").value),
-        lengthMeters: cut.querySelector("[data-rope-length]").value,
+        variantId: getSelectedVariantId(),
+        quantity: lengthDecimeters,
+        lengthMeters: lengthDecimeters / 10,
         presentation: cut.querySelector("[data-rope-presentation]:checked").value,
       };
     });
   }
 
   function markConfigurationChanged() {
-    submitButton.disabled = true;
-    prepareButton.disabled = false;
-    prepareButton.textContent = "Konfiguration abschließen";
+    submitButton.disabled = false;
   }
+
+  function getSelectedVariantId() {
+    if (hasVariantChangeEvent) return selectedVariantId;
+    var queryVariant = new URLSearchParams(window.location.search).get("variant");
+    if (queryVariant && /^\d+$/.test(queryVariant)) {
+      return "gid://shopify/ProductVariant/" + queryVariant;
+    }
+    return selectedVariantId;
+  }
+
+  document.addEventListener("variant:change", function (event) {
+    var variant = event.detail && event.detail.variant;
+    if (
+      variant &&
+      variant.product_id &&
+      String(variant.product_id).split("/").pop() !== String(script.dataset.productId)
+    ) return;
+    if (variant && variant.id) {
+      var variantId = String(variant.id);
+      selectedVariantId = variantId.indexOf("gid://") === 0
+        ? variantId
+        : "gid://shopify/ProductVariant/" + variantId;
+      hasVariantChangeEvent = true;
+    }
+  });
 
   function updateRemoveButtons() {
     var cuts = cutsContainer.querySelectorAll(".rope-cut");
@@ -55,13 +80,10 @@
     var fragment = template.content.cloneNode(true);
     var cut = fragment.querySelector(".rope-cut");
     var index = nextIndex++;
-    var quantity = cut.querySelector("[data-rope-quantity]");
     var length = cut.querySelector("[data-rope-length]");
     var radios = cut.querySelectorAll("[data-rope-presentation]");
 
-    quantity.id = "RopeQuantity-" + script.dataset.sectionId + "-" + index;
     length.id = "RopeLength-" + script.dataset.sectionId + "-" + index;
-    cut.querySelector("[data-quantity-label]").htmlFor = quantity.id;
     cut.querySelector("[data-length-label]").htmlFor = length.id;
     radios.forEach(function (radio) {
       radio.name = "rope-presentation-" + script.dataset.sectionId + "-" + index;
@@ -72,7 +94,6 @@
       updateRemoveButtons();
       markConfigurationChanged();
     });
-    quantity.addEventListener("input", markConfigurationChanged);
     length.addEventListener("input", markConfigurationChanged);
     radios.forEach(function (radio) {
       radio.addEventListener("change", markConfigurationChanged);
@@ -98,11 +119,7 @@
       var payload = await response.json();
       if (!payload.ok || !payload.config) return;
 
-      var quantity = template.content.querySelector("[data-rope-quantity]");
       var length = template.content.querySelector("[data-rope-length]");
-      quantity.min = String(payload.config.minQuantity);
-      quantity.max = String(payload.config.maxQuantity);
-      quantity.value = String(payload.config.minQuantity);
       length.min = payload.config.minLengthMeters;
       length.max = payload.config.maxLengthMeters;
       length.value = payload.config.defaultLengthMeters;
@@ -112,33 +129,6 @@
   }
 
   form.querySelector("[data-add-rope-cut]").addEventListener("click", addCut);
-
-  prepareButton.addEventListener("click", async function () {
-    showError("");
-    if (!form.reportValidity()) return;
-
-    var prepareRopeCut = window.HanfwolfPricing && window.HanfwolfPricing.prepareRopeCut;
-    if (!prepareRopeCut) {
-      showError("Der Hanfwolf-Warenkorbservice wurde nicht geladen.");
-      return;
-    }
-
-    prepareButton.disabled = true;
-    submitButton.disabled = true;
-    prepareButton.textContent = "Zuschnitte werden erstellt und synchronisiert ...";
-
-    try {
-      await Promise.all(getItems().map(function (item) {
-        return prepareRopeCut(item);
-      }));
-      prepareButton.textContent = "Konfiguration bestätigt";
-      submitButton.disabled = false;
-    } catch (error) {
-      prepareButton.disabled = false;
-      prepareButton.textContent = "Konfiguration abschließen";
-      showError(error instanceof Error ? error.message : "Die Zuschnitte konnten nicht vorbereitet werden.");
-    }
-  });
 
   form.addEventListener("submit", async function (event) {
     event.preventDefault();
@@ -152,6 +142,12 @@
     try {
       if (!window.HanfwolfPricing || !window.HanfwolfPricing.addRopeCutToCart) {
         throw new Error("Der Hanfwolf-Warenkorbservice wurde nicht geladen.");
+      }
+
+      if (items.some(function (item) {
+        return !Number.isSafeInteger(item.quantity) || item.quantity < 1;
+      })) {
+        throw new Error("Die Länge muss mindestens 0,1 m betragen.");
       }
 
       for (var index = 0; index < items.length; index += 1) {

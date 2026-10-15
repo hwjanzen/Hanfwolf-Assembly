@@ -6,43 +6,10 @@ import { authenticate } from "../shopify.server";
 import {
   getRopeConfiguratorConfig,
   saveRopeConfiguratorSetup,
-  type VariantMetafieldDefinition,
 } from "../services/rope-configurator-setup.server";
-import type { MetafieldMapping } from "../services/rope-configurator-config";
 import { adminGraphql } from "../services/shopify-graphql.server";
 
-const NO_METAFIELD_MAPPING = "__none__";
-
-async function loadMetafieldDefinitions(admin: unknown, ownerType: "PRODUCT" | "PRODUCTVARIANT") {
-  const result = await adminGraphql<{
-    metafieldDefinitions: { nodes: VariantMetafieldDefinition[] };
-  }>(
-    admin,
-    `#graphql
-    query RopeConfiguratorMetafieldDefinitions($ownerType: MetafieldOwnerType!) {
-      metafieldDefinitions(first: 250, ownerType: $ownerType) {
-        nodes {
-          id
-          name
-          namespace
-          key
-          type {
-            name
-          }
-        }
-      }
-    }`,
-    { ownerType },
-  );
-
-  if (!result.ok) {
-    throw new Error(result.errors.join(" | "));
-  }
-
-  return result.data.metafieldDefinitions.nodes.sort((left, right) =>
-    left.name.localeCompare(right.name, "de"),
-  );
-}
+const AUTO_PRODUCT_TYPE = "__none__";
 
 async function loadProductTypes(admin: unknown) {
   const result = await adminGraphql<{
@@ -78,100 +45,32 @@ function formatScaledDecimal(value: number, decimals: number) {
   return (value / 10 ** decimals).toFixed(decimals).replace(/\.?0+$/, "") || "0";
 }
 
-function resolveMapping(
-  submittedValue: FormDataEntryValue | null,
-  definitions: VariantMetafieldDefinition[],
-  label: string,
-): MetafieldMapping | null {
-  const rawValue = typeof submittedValue === "string" ? submittedValue.trim() : "";
-  if (!rawValue || rawValue === NO_METAFIELD_MAPPING) return null;
-
-  let value = rawValue;
-  try {
-    value = decodeURIComponent(rawValue);
-  } catch {
-    // Keep the original value when it is not URI encoded.
-  }
-
-  const definition = definitions.find(
-    (candidate) =>
-      candidate.id === value ||
-      `${candidate.namespace}.${candidate.key}` === value ||
-      `${candidate.namespace}:${candidate.key}` === value,
-  );
-  if (!definition) {
-    throw new Error(
-      `${label}: Das ausgewaehlte Metafeld ist nicht mehr verfuegbar. Bitte die Seite neu laden und erneut auswaehlen.`,
-    );
-  }
-  return {
-    definitionId: definition.id,
-    namespace: definition.namespace,
-    key: definition.key,
-  };
-}
-
-function mappingOptionValue(definition: VariantMetafieldDefinition) {
-  return `${definition.namespace}:${definition.key}`;
-}
-
-function selectedMappingValue(
-  mapping: MetafieldMapping | null,
-  definitions: VariantMetafieldDefinition[],
-) {
-  if (!mapping) return NO_METAFIELD_MAPPING;
-  const definition = definitions.find(
-    (definition) =>
-      definition.id === mapping.definitionId ||
-      (definition.namespace === mapping.namespace && definition.key === mapping.key),
-  );
-  return definition ? mappingOptionValue(definition) : NO_METAFIELD_MAPPING;
-}
-
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { admin, session } = await authenticate.admin(request);
-  const [allVariantDefinitions, allProductDefinitions, productTypes, config] = await Promise.all([
-    loadMetafieldDefinitions(admin, "PRODUCTVARIANT"),
-    loadMetafieldDefinitions(admin, "PRODUCT"),
+  const [productTypes, config] = await Promise.all([
     loadProductTypes(admin),
     getRopeConfiguratorConfig(session.shop),
   ]);
 
-  return {
-    variantDefinitions: allVariantDefinitions.filter(
-      (definition) => definition.type.name === "single_line_text_field",
-    ),
-    surchargeDefinitions: allProductDefinitions.filter((definition) =>
-      ["number_decimal", "single_line_text_field"].includes(definition.type.name),
-    ),
-    productTypes,
-    config,
-  };
+  return { productTypes, config };
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const { admin, session } = await authenticate.admin(request);
   const formData = await request.formData();
   try {
-    const [allVariantDefinitions, allProductDefinitions, productTypes] = await Promise.all([
-      loadMetafieldDefinitions(admin, "PRODUCTVARIANT"),
-      loadMetafieldDefinitions(admin, "PRODUCT"),
+    const [productTypes, config] = await Promise.all([
       loadProductTypes(admin),
+      getRopeConfiguratorConfig(session.shop),
     ]);
-    const variantDefinitions = allVariantDefinitions.filter(
-      (definition) => definition.type.name === "single_line_text_field",
-    );
-    const surchargeDefinitions = allProductDefinitions.filter((definition) =>
-      ["number_decimal", "single_line_text_field"].includes(definition.type.name),
-    );
     const submittedProductType = String(formData.get("ropeProductType") || "").trim();
     const ropeProductType =
-      !submittedProductType || submittedProductType === NO_METAFIELD_MAPPING
+      !submittedProductType || submittedProductType === AUTO_PRODUCT_TYPE
         ? null
         : productTypes.find((productType) => productType === submittedProductType) ?? null;
     if (
       submittedProductType &&
-      submittedProductType !== NO_METAFIELD_MAPPING &&
+      submittedProductType !== AUTO_PRODUCT_TYPE &&
       !ropeProductType
     ) {
       throw new Error(
@@ -179,11 +78,9 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       );
     }
 
-    const minLengthHundredths = parseScaledDecimal(formData.get("minLengthMeters"), 2, "Minimale Länge");
-    const maxLengthHundredths = parseScaledDecimal(formData.get("maxLengthMeters"), 2, "Maximale Länge");
-    const defaultLengthHundredths = parseScaledDecimal(formData.get("defaultLengthMeters"), 2, "Vorgabelänge");
-    const minQuantity = Number(formData.get("minQuantity"));
-    const maxQuantity = Number(formData.get("maxQuantity"));
+    const minLengthHundredths = parseScaledDecimal(formData.get("minLengthMeters"), 1, "Minimale Länge") * 10;
+    const maxLengthHundredths = parseScaledDecimal(formData.get("maxLengthMeters"), 1, "Maximale Länge") * 10;
+    const defaultLengthHundredths = parseScaledDecimal(formData.get("defaultLengthMeters"), 1, "Vorgabelänge") * 10;
     if (minLengthHundredths <= 0 || maxLengthHundredths < minLengthHundredths) {
       throw new Error("Der Längenbereich ist ungültig.");
     }
@@ -193,31 +90,11 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     ) {
       throw new Error("Die Vorgabelänge muss innerhalb des Längenbereichs liegen.");
     }
-    if (
-      !Number.isSafeInteger(minQuantity) ||
-      !Number.isSafeInteger(maxQuantity) ||
-      minQuantity < 1 ||
-      maxQuantity < minQuantity
-    ) {
-      throw new Error("Der Mengenbereich ist ungültig.");
-    }
-
     await saveRopeConfiguratorSetup(session.shop, {
+      ...config,
       minLengthHundredths,
       maxLengthHundredths,
       defaultLengthHundredths,
-      minQuantity,
-      maxQuantity,
-      packageQuantityMetafield: resolveMapping(
-        formData.get("packageQuantityMetafieldDefinitionId"),
-        variantDefinitions,
-        "Menge pro Verpackungseinheit",
-      ),
-      haspelSurchargeMetafield: resolveMapping(
-        formData.get("haspelSurchargeMetafieldDefinitionId"),
-        surchargeDefinitions,
-        "Haspel-Aufpreis",
-      ),
       ropeProductType,
     });
 
@@ -231,8 +108,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 };
 
 export default function RopeConfiguratorSetupPage() {
-  const { variantDefinitions, surchargeDefinitions, productTypes, config } =
-    useLoaderData<typeof loader>();
+  const { productTypes, config } = useLoaderData<typeof loader>();
   const fetcher = useFetcher<typeof action>();
   const shopify = useAppBridge();
   const isSubmitting = fetcher.state !== "idle";
@@ -246,48 +122,14 @@ export default function RopeConfiguratorSetupPage() {
   return (
     <s-page heading="RopeConfigurator Setup" inlineSize="base">
       <fetcher.Form method="post">
-        <s-section heading="Metafeld-Zuordnung">
+        <s-section heading="Seil-Konfigurator">
           <s-stack direction="block" gap="base">
-            {variantDefinitions.length === 0 ? (
-              <s-banner heading="Kein passendes Metafeld vorhanden" tone="warning">
-                Lege zuerst in Shopify eine Varianten-Metafelddefinition vom Typ
-                Einzeiliger Text an.
-              </s-banner>
-            ) : null}
-
-            <s-select
-              label="Menge pro Verpackungseinheit"
-              name="packageQuantityMetafieldDefinitionId"
-              value={selectedMappingValue(config.packageQuantityMetafield, variantDefinitions)}
-              disabled={variantDefinitions.length === 0}
-            >
-              <s-option value={NO_METAFIELD_MAPPING}>Nicht zugeordnet</s-option>
-              {variantDefinitions.map((definition) => (
-                <s-option key={definition.id} value={mappingOptionValue(definition)}>
-                  {definition.name} ({definition.namespace}.{definition.key})
-                </s-option>
-              ))}
-            </s-select>
-
-            <s-select
-              label="Haspel-Aufpreis"
-              name="haspelSurchargeMetafieldDefinitionId"
-              value={selectedMappingValue(config.haspelSurchargeMetafield, surchargeDefinitions)}
-            >
-              <s-option value={NO_METAFIELD_MAPPING}>Nicht zugeordnet</s-option>
-              {surchargeDefinitions.map((definition) => (
-                <s-option key={definition.id} value={mappingOptionValue(definition)}>
-                  {definition.name} ({definition.namespace}.{definition.key})
-                </s-option>
-              ))}
-            </s-select>
-
             <s-select
               label="Seil-Produkttyp"
               name="ropeProductType"
-              value={config.ropeProductType ?? NO_METAFIELD_MAPPING}
+              value={config.ropeProductType ?? AUTO_PRODUCT_TYPE}
             >
-              <s-option value={NO_METAFIELD_MAPPING}>Automatisch: Produkttyp beginnt mit Spezialseil</s-option>
+              <s-option value={AUTO_PRODUCT_TYPE}>Automatisch: Produkttyp beginnt mit Spezialseil</s-option>
               {productTypes.map((productType) => (
                 <s-option key={productType} value={productType}>
                   {productType}
@@ -295,20 +137,19 @@ export default function RopeConfiguratorSetupPage() {
               ))}
             </s-select>
 
-            <s-paragraph color="subdued">
-              Beim Anlegen oder Wiederverwenden einer Zuschnitt-Variante schreibt
-              die App den Wert 1 in das zugeordnete Metafeld.
-            </s-paragraph>
+            <s-banner heading="Shopify-Stammdaten" tone="info">
+              Preise und Versandgewichte müssen an jeder Seil-Variante je 1 dm
+              gepflegt sein. Die Warenkorbmenge entspricht der Länge in dm;
+              Shopify berechnet Preis, Gewicht und Bestand selbst.
+            </s-banner>
           </s-stack>
         </s-section>
 
         <s-section heading="Grenzwerte">
           <s-grid gridTemplateColumns="repeat(2, minmax(0, 1fr))" gap="base">
-            <s-number-field label="Minimale Länge (m)" name="minLengthMeters" min={0.01} step={0.01} value={formatScaledDecimal(config.minLengthHundredths, 2)} required></s-number-field>
-            <s-number-field label="Maximale Länge (m)" name="maxLengthMeters" min={0.01} step={0.01} value={formatScaledDecimal(config.maxLengthHundredths, 2)} required></s-number-field>
-            <s-number-field label="Vorgabelänge (m)" name="defaultLengthMeters" min={0.01} step={0.01} value={formatScaledDecimal(config.defaultLengthHundredths, 2)} required></s-number-field>
-            <s-number-field label="Minimale Menge" name="minQuantity" min={1} step={1} value={String(config.minQuantity)} required></s-number-field>
-            <s-number-field label="Maximale Menge" name="maxQuantity" min={1} step={1} value={String(config.maxQuantity)} required></s-number-field>
+            <s-number-field label="Minimale Länge (m)" name="minLengthMeters" min={0.1} step={0.1} value={formatScaledDecimal(Math.round(config.minLengthHundredths / 10) * 10, 2)} required></s-number-field>
+            <s-number-field label="Maximale Länge (m)" name="maxLengthMeters" min={0.1} step={0.1} value={formatScaledDecimal(Math.round(config.maxLengthHundredths / 10) * 10, 2)} required></s-number-field>
+            <s-number-field label="Vorgabelänge (m)" name="defaultLengthMeters" min={0.1} step={0.1} value={formatScaledDecimal(Math.round(config.defaultLengthHundredths / 10) * 10, 2)} required></s-number-field>
           </s-grid>
         </s-section>
 

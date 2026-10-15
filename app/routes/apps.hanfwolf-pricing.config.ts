@@ -3,7 +3,7 @@ import { authenticate } from "../shopify.server";
 import { getRopeConfiguratorConfig } from "../services/rope-configurator-setup.server";
 
 function formatHundredths(value: number) {
-  return (value / 100).toString();
+  return (Math.round(value / 10) / 10).toString();
 }
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {

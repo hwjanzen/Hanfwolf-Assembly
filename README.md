@@ -146,7 +146,11 @@ Hinweise:
 - Auf `products/gift-card` wird eine Add-to-Cart-Preisbox gerendert.
 - Auf `collections/all` werden fuer die ersten gefundenen Produktkarten Custom-Preise eingeblendet.
 
-### Konfektionierte Seile per Draft Order
+### Legacy-Draft-Order-API fuer Seile
+
+Dieser separate API-Endpunkt wird vom Seil-Konfigurator nicht mehr verwendet.
+Der Konfigurator nutzt die native Shopify-Warenkorbabrechnung in dm (siehe
+unten). Die API bleibt fuer bestehende externe Aufrufer verfuegbar:
 
 Der signierte App-Proxy-Endpunkt `POST /apps/hanfwolf-pricing/draft-order`
 erstellt fuer Produkte vom Typ `Spezialseile` einen Draft Order. Der
@@ -202,35 +206,43 @@ berechnet und als eine Versandzeile `Standard` am Draft Order gesetzt:
 - ueber 50 bis 200 kg: 50 EUR
 - ueber 200 kg: 150 EUR
 
-### Zuschnitt-Varianten im Warenkorb
+### Seil-Konfigurator: native Shopify-Abrechnung in dm
 
-`POST /apps/hanfwolf-pricing/cart-variant` nimmt einen einzelnen Seil-Zuschnitt
-entgegen, berechnet dessen Preis serverseitig und liefert eine wiederverwendbare
-Shopify-Variante fuer den Warenkorb. Die Theme-Integration fuegt die Antwort mit
-`/cart/add.js` hinzu. Die Antwort enthaelt `cartVariantNumericId` und die unter
-`properties` gelieferten Line-Properties; insbesondere darf niemals ein Preis
-aus dem Browser uebernommen werden.
+Der Theme-Konfigurator erzeugt keine Produktvarianten und berechnet keine
+Preise oder Gewichte. Jeder Zuschnitt ist eine eigene Warenkorbzeile mit der
+gewaehlten Shopify-Variante. Die Laenge wird in 0,1-m-Schritten eingegeben und
+als Warenkorbmenge in dm hinzugefuegt: 1,3 m entsprechen 13 Einheiten. Shopify
+berechnet den nativen Variantenpreis, das Versandgewicht und den Bestand je
+Einheit (1 dm). Daher muessen Preis und Gewicht der verwendeten Varianten in
+Shopify jeweils je 1 dm gepflegt sein; der Bestand wird ebenfalls in dm
+gefuehrt.
 
-Die temporäre Variante wird ueber Originalvariante, Laenge, Aufmachung und
-berechneten Preis wiederverwendet. Fuer die Bereitstellung ist der Scope
-`write_products` erforderlich. Nach einer Scope-Aenderung muss die App erneut
-autorisiert werden.
+Die Laenge in Metern (z. B. `1,3 m`) und die Aufmachung (Ring/Haspel) werden als
+Line-Item-Properties gespeichert. Haspel verursacht keinen separaten Aufpreis.
+Eine versteckte, eindeutige Property sorgt dafuer, dass auch gleich konfigurierte
+Zuschnitte als getrennte Warenkorbzeilen erhalten bleiben.
 
-`POST /apps/hanfwolf-pricing/cart-draft-order` finalisiert den kompletten
-Warenkorb in einer einzigen Draft Order. Der Request nimmt die Shopify-Cart-Lines
-mit `variantId`, `quantity` und optionalen `properties` entgegen. Fuer
-Zuschnitt-Varianten liest der Endpunkt ausschliesslich das serverseitige
-Metafeld `hanfwolf.rope_configuration`; die Line-Properties aus dem Browser
-sind keine Preisquelle. Gewoehnliche Varianten werden als normale
-Draft-Order-Positionen uebernommen.
+Der Rope-Konfigurator fuegt Positionen direkt ueber `/cart/add.js` hinzu. Beim
+Aufruf von `finalizeCart` wird ein Warenkorb mit solchen Zuschnitten direkt an
+Shopifys Checkout uebergeben; er wird nicht in eine Draft Order umgerechnet.
+Der separate Draft-Order-Ablauf fuer Warenkoerbe ohne Konfigurator-Zuschnitte
+bleibt erhalten.
+
+`POST /apps/hanfwolf-pricing/cart-draft-order` finalisiert Warenkoerbe ohne
+neue native Konfigurator-Zuschnitte in einer einzigen Draft Order. Der Request
+nimmt Shopify-Cart-Lines mit `variantId`, `quantity` und optionalen
+`properties` entgegen. Fuer bestehende Zuschnitt-Varianten liest der Endpunkt
+ausschliesslich das serverseitige Metafeld `hanfwolf.rope_configuration`; die
+Line-Properties aus dem Browser sind keine Preisquelle. Gewoehnliche Varianten
+werden als normale Draft-Order-Positionen uebernommen.
 
 Das Theme-Skript stellt die folgenden Browser-APIs bereit:
 
 ```js
 await window.HanfwolfPricing.addRopeCutToCart({
   variantId: "gid://shopify/ProductVariant/123456789",
-  quantity: 1,
-  lengthMeters: "12",
+  quantity: 13,
+  lengthMeters: 1.3,
   presentation: "Ring",
 });
 

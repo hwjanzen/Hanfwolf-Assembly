@@ -10,7 +10,6 @@ export type RopeConfiguratorConfig = {
   defaultLengthHundredths: number;
   minQuantity: number;
   maxQuantity: number;
-  packageQuantityMetafield: MetafieldMapping | null;
   haspelSurchargeMetafield: MetafieldMapping | null;
   ropeProductType: string | null;
 };
@@ -21,7 +20,6 @@ export const DEFAULT_ROPE_CONFIG: RopeConfiguratorConfig = {
   defaultLengthHundredths: 100,
   minQuantity: 1,
   maxQuantity: 999,
-  packageQuantityMetafield: null,
   haspelSurchargeMetafield: {
     definitionId: "",
     namespace: "custom",

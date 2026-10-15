@@ -12,11 +12,6 @@
     margin-bottom: 2.4rem;
   }
 
-  .rope-configurator-{{ section.id }} .rope-configurator__variant {
-    max-width: 42rem;
-    margin-bottom: 2.4rem;
-  }
-
   .rope-configurator-{{ section.id }} .rope-configurator__cuts {
     display: grid;
     gap: 1.6rem;
@@ -24,7 +19,7 @@
 
   .rope-configurator-{{ section.id }} .rope-cut {
     display: grid;
-    grid-template-columns: minmax(10rem, 0.6fr) minmax(14rem, 1fr) minmax(18rem, 1.4fr) auto;
+    grid-template-columns: minmax(14rem, 1fr) minmax(18rem, 1.4fr) auto;
     gap: 1.6rem;
     align-items: end;
     padding: 1.6rem 0;
@@ -37,8 +32,7 @@
     gap: 0.8rem;
   }
 
-  .rope-configurator-{{ section.id }} .rope-cut__field input,
-  .rope-configurator-{{ section.id }} .rope-configurator__variant select {
+  .rope-configurator-{{ section.id }} .rope-cut__field input {
     width: 100%;
     min-height: 4.8rem;
     padding: 0.8rem 1.2rem;
@@ -115,31 +109,11 @@
       id="RopeConfigurator-{{ section.id }}"
       data-rope-configurator
     >
-      {% comment %}       
-       <div class="rope-configurator__variant">
-        <label for="RopeVariant-{{ section.id }}">Ausführung</label>
-        <select id="RopeVariant-{{ section.id }}" data-rope-variant required>
-          {%- for variant in product.variants -%}
-            <option
-              value="gid://shopify/ProductVariant/{{ variant.id }}"
-              {% unless variant.available %}disabled{% endunless %}
-              {% if variant == product.selected_or_first_available_variant %}selected{% endif %}
-            >
-              {{ variant.title | escape }}{% unless variant.available %} – nicht verfügbar{% endunless %}
-            </option>
-          {%- endfor -%}
-        </select>
-      </div> 
-      {% endcomment %}
-
       <div class="rope-configurator__cuts" data-rope-cuts></div>
 
       <div class="rope-configurator__actions">
         <button class="button button--secondary" type="button" data-add-rope-cut>
           Weiteren Zuschnitt hinzufügen
-        </button>
-        <button class="button button--secondary" type="button" data-prepare-rope>
-          Konfiguration korrekt?
         </button>
         <button class="button" type="submit" data-rope-submit>
           In den Warenkorb
@@ -147,7 +121,7 @@
       </div>
 
       <p class="rope-configurator__notice">
-        Preis und Versandgewicht werden anhand der gewählten Länge berechnet.
+        Preis, Gewicht und Bestand werden von Shopify je 1 dm berechnet. Bitte pflege Preis und Gewicht der Variante je dm.
       </p>
       <p class="rope-configurator__error" role="alert" hidden data-rope-error></p>
     </form>
@@ -156,18 +130,13 @@
   <template data-rope-cut-template>
     <fieldset class="rope-cut">
       <div class="rope-cut__field">
-        <label data-quantity-label>Anzahl Seile</label>
-        <input type="number" min="1" max="999" step="1" value="1" required data-rope-quantity>
-      </div>
-
-      <div class="rope-cut__field">
-        <label data-length-label>Länge je Seil (m)</label>
+        <label data-length-label>Länge dieses Zuschnitts (m)</label>
         <input
           type="number"
           inputmode="decimal"
           min="0.5"
           max="500"
-          step="0.01"
+          step="0.1"
           value="1"
           required
           data-rope-length
@@ -183,7 +152,7 @@
           </label>
           <label class="rope-cut__option">
             <input type="radio" value="Haspel" data-rope-presentation>
-            Haspel (Aufpreis)
+            Haspel
           </label>
         </div>
       </div>
@@ -206,7 +175,8 @@
   src="/apps/hanfwolf-pricing/rope-configurator-script"
   data-form-id="RopeConfigurator-{{ section.id }}"
   data-section-id="{{ section.id }}"
-  data-product-id="gid://shopify/Product/{{ product.id }}"
+  data-product-id="{{ product.id }}"
+  data-variant-id="gid://shopify/ProductVariant/{{ product.selected_or_first_available_variant.id }}"
   data-cart-url="{{ routes.cart_url }}"
   data-config-url="/apps/hanfwolf-pricing/config"
   defer
@@ -228,7 +198,7 @@
       "type": "text",
       "id": "description",
       "label": "Beschreibung",
-      "default": "Lege Anzahl, Länge und Aufmachung für jeden gewünschten Zuschnitt fest."
+      "default": "      Lege Länge und Aufmachung für jeden gewünschten Zuschnitt fest."
     },
     {
       "type": "color_scheme",

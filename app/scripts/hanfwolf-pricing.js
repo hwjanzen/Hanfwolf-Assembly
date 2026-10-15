@@ -153,57 +153,32 @@
     return payload;
   }
 
-  async function prepareRopeCut(item) {
-    var prepared = await requestJson(buildProxyActionUrl("cart-variant"), {
-      method: "POST",
-      credentials: "same-origin",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ item: item }),
-    });
-
-    var productUrl =
-      getStoreRoot() +
-      "products/" +
-      encodeURIComponent(prepared.productHandle) +
-      ".js";
-    var delays = [0, 1000, 2000, 3000, 5000, 8000, 10000, 10000, 10000];
-
-    for (var attempt = 0; attempt < delays.length; attempt += 1) {
-      if (delays[attempt] > 0) {
-        await new Promise(function (resolve) {
-          window.setTimeout(resolve, delays[attempt]);
-        });
-      }
-
-      var response = await fetch(productUrl + "?availability_check=" + Date.now(), {
-        credentials: "same-origin",
-        cache: "no-store",
-        headers: { Accept: "application/json" },
-      });
-      if (!response.ok) continue;
-
-      var product = await response.json();
-      var variant = (product.variants || []).find(function (candidate) {
-        return String(candidate.id) === String(prepared.cartVariantNumericId);
-      });
-      if (variant && variant.available) return prepared;
-    }
-
-    throw new Error(
-      "Shopify synchronisiert den Zuschnitt noch. Bitte kurz warten und die Konfiguration erneut bestätigen.",
-    );
-  }
-
   async function addRopeCutToCart(item) {
-    var cartVariant = await prepareRopeCut(item);
-
+    var numericVariantId = String(item.variantId || "").split("/").pop();
+    var quantity = Number(item.quantity);
+    var lengthMeters = Number(item.lengthMeters);
+    if (
+      !/^\d+$/.test(numericVariantId) ||
+      !Number.isSafeInteger(quantity) ||
+      quantity < 1 ||
+      !Number.isFinite(lengthMeters) ||
+      Math.round(lengthMeters * 10) !== quantity ||
+      (item.presentation !== "Ring" && item.presentation !== "Haspel")
+    ) {
+      throw new Error("Variante oder Länge des Zuschnitts ist ungültig.");
+    }
+    var cutId =
+      window.crypto && typeof window.crypto.randomUUID === "function"
+        ? window.crypto.randomUUID()
+        : Date.now().toString(36) + Math.random().toString(36).slice(2);
     var addPayload = {
-      id: cartVariant.cartVariantNumericId,
-      quantity: cartVariant.quantity,
-      properties: cartVariant.properties,
+      id: numericVariantId,
+      quantity: quantity,
+      properties: {
+        Länge: lengthMeters.toFixed(1).replace(".", ",") + " m",
+        Aufmachung: item.presentation,
+        _hanfwolf_rope_cut_id: cutId,
+      },
     };
     var cartResponse = await fetch(getStoreRoot() + "cart/add.js", {
       method: "POST",
@@ -242,6 +217,14 @@
       credentials: "same-origin",
       headers: { Accept: "application/json" },
     });
+    var hasConfiguredRopeCut = (cart.items || []).some(function (item) {
+      return item.properties && item.properties._hanfwolf_rope_cut_id;
+    });
+    if (hasConfiguredRopeCut) {
+      window.location.assign(getStoreRoot() + "checkout");
+      return;
+    }
+
     var draftOrder = await requestJson(
       buildProxyActionUrl("cart-draft-order"),
       {
@@ -681,7 +664,6 @@
   bindCartCheckout();
 
   window.HanfwolfPricing = window.HanfwolfPricing || {};
-  window.HanfwolfPricing.prepareRopeCut = prepareRopeCut;
   window.HanfwolfPricing.addRopeCutToCart = addRopeCutToCart;
   window.HanfwolfPricing.finalizeCart = finalizeCart;
 })();
