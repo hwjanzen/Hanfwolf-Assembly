@@ -1,0 +1,183 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "main": {
+      "type": "main-product",
+      "blocks": {
+        "vendor": {
+          "type": "text",
+          "settings": {
+            "text": "{{ product.vendor }}",
+            "text_style": "uppercase"
+          }
+        },
+        "title": {
+          "type": "title",
+          "settings": {}
+        },
+        "sku_6mExfj": {
+          "type": "sku",
+          "settings": {
+            "text_style": "body"
+          }
+        },
+        "variant_picker": {
+          "type": "variant_picker",
+          "settings": {
+            "picker_type": "button",
+            "swatch_shape": "circle"
+          }
+        },
+        "price": {
+          "type": "price",
+          "settings": {}
+        },
+        "custom_liquid_Gz9HVx": {
+          "type": "custom_liquid",
+          "settings": {
+            "custom_liquid": "<p>\n  Menge pro Karton: {{ product.selected_or_first_available_variant.metafields.custom.menge_pro_karton }}\n</p>"
+          }
+        },
+        "length_selector": {
+          "type": "length_selector",
+          "settings": {}
+        },
+        "quantity_selector": {
+          "type": "quantity_selector",
+          "settings": {}
+        },
+        "inventory_qbpcjQ": {
+          "type": "inventory",
+          "settings": {
+            "text_style": "body",
+            "inventory_threshold": 10,
+            "show_inventory_quantity": false
+          }
+        },
+        "buy_buttons": {
+          "type": "buy_buttons",
+          "settings": {
+            "show_dynamic_checkout": false,
+            "show_gift_card_recipient": true
+          }
+        },
+        "description": {
+          "type": "description",
+          "settings": {}
+        },
+        "share": {
+          "type": "share",
+          "settings": {
+            "share_label": "Share"
+          }
+        }
+      },
+      "block_order": [
+        "vendor",
+        "title",
+        "sku_6mExfj",
+        "variant_picker",
+        "price",
+        "custom_liquid_Gz9HVx",
+        "quantity_selector",
+        "inventory_qbpcjQ",
+        "buy_buttons",
+        "description",
+        "share"
+      ],
+      "settings": {
+        "enable_sticky_info": true,
+        "color_scheme": "scheme-1",
+        "media_size": "small",
+        "constrain_to_viewport": true,
+        "media_fit": "contain",
+        "gallery_layout": "stacked",
+        "mobile_thumbnails": "hide",
+        "media_position": "left",
+        "image_zoom": "none",
+        "hide_variants": true,
+        "enable_video_looping": false,
+        "padding_top": 36,
+        "padding_bottom": 12
+      }
+    },
+    "image_with_text_wy7QE6": {
+      "type": "image-with-text",
+      "blocks": {
+        "heading_DKz6id": {
+          "type": "heading",
+          "settings": {
+            "heading": "Bild mit Text",
+            "heading_size": "h1"
+          }
+        },
+        "text_mB7U9T": {
+          "type": "text",
+          "settings": {
+            "text": "<p>Kombiniere Text mit einem Bild, um den Fokus auf dein Produkt, deine Kollektion oder deinen Blog-Beitrag zu richten. Du kannst außerdem weitere Details über die Verfügbarkeit oder den Stil und sogar eine Bewertung hinzufügen.</p>",
+            "text_style": "body"
+          }
+        },
+        "button_EVj8NM": {
+          "type": "button",
+          "settings": {
+            "button_label": "Schaltflächenbeschriftung",
+            "button_link": "",
+            "button_style_secondary": false
+          }
+        }
+      },
+      "block_order": [
+        "heading_DKz6id",
+        "text_mB7U9T",
+        "button_EVj8NM"
+      ],
+      "name": "t:sections.image-with-text.presets.name",
+      "settings": {
+        "height": "adapt",
+        "desktop_image_width": "small",
+        "layout": "text_first",
+        "image_behavior": "none",
+        "content_layout": "no-overlap",
+        "desktop_content_position": "top",
+        "desktop_content_alignment": "left",
+        "mobile_content_alignment": "left",
+        "section_color_scheme": "",
+        "color_scheme": "",
+        "padding_top": 36,
+        "padding_bottom": 36
+      }
+    },
+    "related-products": {
+      "type": "related-products",
+      "settings": {
+        "heading": "Das könnte Ihnen auch gefallen",
+        "heading_size": "h2",
+        "products_to_show": 5,
+        "columns_desktop": 5,
+        "columns_mobile": "2",
+        "color_scheme": "scheme-1",
+        "image_ratio": "square",
+        "image_shape": "default",
+        "show_secondary_image": true,
+        "show_vendor": false,
+        "show_rating": false,
+        "padding_top": 36,
+        "padding_bottom": 28
+      }
+    }
+  },
+  "order": [
+    "main",
+    "image_with_text_wy7QE6",
+    "related-products"
+  ]
+}

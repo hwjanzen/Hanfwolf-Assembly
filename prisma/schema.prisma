@@ -49,3 +49,29 @@ model RopeConfiguratorSetup {
   maxQuantity                                Int      @default(999)
   updatedAt                                  DateTime @updatedAt
 }
+
+model RopeConfiguration {
+  id           String   @id
+  shop         String
+  productId    String
+  snapshot     String
+  variantId    String?
+  status       String   @default("pending")
+  error        String?
+  leaseUntil   DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([shop, productId])
+}
+
+model RopeConfigurationSelection {
+  id              String   @id
+  shop            String
+  configurationId String
+  customerId      String?
+  quantity        Int
+  createdAt       DateTime @default(now())
+
+  @@index([shop, configurationId])
+}

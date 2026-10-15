@@ -3,95 +3,61 @@
     padding-top: {{ section.settings.padding_top }}px;
     padding-bottom: {{ section.settings.padding_bottom }}px;
   }
-
-  .rope-configurator-{{ section.id }} .rope-configurator__inner {
-    max-width: 76rem;
-  }
-
-  .rope-configurator-{{ section.id }} .rope-configurator__intro {
-    margin-bottom: 2.4rem;
-  }
-
   .rope-configurator-{{ section.id }} .rope-configurator__cuts {
     display: grid;
     gap: 1.6rem;
   }
-
   .rope-configurator-{{ section.id }} .rope-cut {
-    display: grid;
-    grid-template-columns: minmax(14rem, 1fr) minmax(18rem, 1.4fr) auto;
-    gap: 1.6rem;
-    align-items: end;
-    padding: 1.6rem 0;
-    border-bottom: 0.1rem solid rgba(var(--color-foreground), 0.15);
+    padding: 1.6rem;
+    border: 1px solid rgba(var(--color-foreground), 0.3);
+    min-width: 0;
   }
-
-  .rope-configurator-{{ section.id }} .rope-cut__field,
-  .rope-configurator-{{ section.id }} .rope-cut__presentation {
+  .rope-configurator-{{ section.id }} .rope-cut__inputs {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+    gap: 1.6rem;
+    border: 0;
+    padding: 0;
+    min-width: 0;
+  }
+  .rope-configurator-{{ section.id }} .rope-cut__field {
     display: grid;
     gap: 0.8rem;
   }
-
-  .rope-configurator-{{ section.id }} .rope-cut__field input {
+  .rope-configurator-{{ section.id }} input,
+  .rope-configurator-{{ section.id }} select {
     width: 100%;
     min-height: 4.8rem;
     padding: 0.8rem 1.2rem;
     color: rgb(var(--color-foreground));
     background: rgb(var(--color-background));
-    border: 0.1rem solid rgba(var(--color-foreground), 0.45);
+    border: 1px solid rgba(var(--color-foreground), 0.45);
     border-radius: var(--inputs-radius);
     font: inherit;
   }
-
-  .rope-configurator-{{ section.id }} .rope-cut__options {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1.6rem;
-    min-height: 4.8rem;
-    align-items: center;
-  }
-
-  .rope-configurator-{{ section.id }} .rope-cut__option {
-    display: inline-flex;
-    gap: 0.6rem;
-    align-items: center;
-  }
-
-  .rope-configurator-{{ section.id }} .rope-cut__remove {
-    min-width: 4.8rem;
-    min-height: 4.8rem;
-    border: 0;
-    background: transparent;
-    color: rgb(var(--color-foreground));
-    cursor: pointer;
-    font-size: 2.4rem;
-  }
-
   .rope-configurator-{{ section.id }} .rope-configurator__actions {
     display: flex;
     flex-wrap: wrap;
     gap: 1.2rem;
-    margin-top: 2.4rem;
-  }
-
-  .rope-configurator-{{ section.id }} .rope-configurator__error {
     margin-top: 1.6rem;
-    color: rgb(var(--color-error));
   }
-
-  .rope-configurator-{{ section.id }} .rope-configurator__notice {
-    margin-top: 1.2rem;
-    color: rgba(var(--color-foreground), 0.75);
+  .rope-configurator-{{ section.id }} .rope-configurator__error {
+    color: rgb(var(--color-error, 180, 0, 0));
   }
-
-  @media screen and (max-width: 749px) {
-    .rope-configurator-{{ section.id }} .rope-cut {
-      grid-template-columns: 1fr 1fr;
-    }
-
-    .rope-configurator-{{ section.id }} .rope-cut__presentation {
-      grid-column: 1 / -1;
-    }
+  .rope-configurator-{{ section.id }} .rope-configurator__summary {
+    margin-top: 2.4rem;
+    overflow-x: auto;
+  }
+  .rope-configurator-{{ section.id }} table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .rope-configurator-{{ section.id }} th,
+  .rope-configurator-{{ section.id }} td {
+    padding: 0.8rem;
+    text-align: left;
+    border-bottom: 1px solid rgba(var(--color-foreground), 0.2);
+    vertical-align: top;
   }
 {%- endstyle -%}
 
@@ -99,67 +65,75 @@
   class="rope-configurator-{{ section.id }} color-{{ section.settings.color_scheme }} gradient"
   data-rope-configurator-section
 >
-  <div class="page-width rope-configurator__inner">
-    <div class="rope-configurator__intro">
-      <h2 class="h1">{{ section.settings.heading | escape }}</h2>
-      <p>{{ section.settings.description | escape }}</p>
-    </div>
-
-    <form
-      id="RopeConfigurator-{{ section.id }}"
-      data-rope-configurator
-    >
+  <div class="page-width">
+    <h2 class="h1">{{ section.settings.heading | escape }}</h2>
+    <p>{{ section.settings.description | escape }}</p>
+    <form id="RopeConfigurator-{{ section.id }}" data-rope-configurator>
       <div class="rope-configurator__cuts" data-rope-cuts></div>
-
       <div class="rope-configurator__actions">
-        <button class="button button--secondary" type="button" data-add-rope-cut>
+        <button class="button button--secondary" type="button" data-add-rope-cut disabled>
           Weiteren Zuschnitt hinzufügen
         </button>
-        <button class="button" type="submit" data-rope-submit>
-          In den Warenkorb
+        <button class="button button--secondary" type="button" data-rope-review disabled>
+          Bestellübersicht prüfen
         </button>
       </div>
-
-      <p class="rope-configurator__notice">
-        Preis, Gewicht und Bestand werden von Shopify je 1 dm berechnet. Bitte pflege Preis und Gewicht der Variante je dm.
-      </p>
+      <div class="rope-configurator__summary" data-rope-summary hidden>
+        <h3>Ihre Zusammenstellung</h3>
+        <table>
+          <caption class="visually-hidden">Konfigurierte Zuschnitte</caption>
+          <thead>
+            <tr>
+              <th scope="col">Zuschnitt</th>
+              <th scope="col">Stück</th>
+              <th scope="col">Länge je Stück</th>
+              <th scope="col">Ausführung</th>
+              <th scope="col">Stückpreis</th>
+              <th scope="col">Gesamt</th>
+              <th scope="col">Aktionen</th>
+            </tr>
+          </thead>
+          <tbody data-rope-summary-rows></tbody>
+        </table>
+        <p data-rope-total></p>
+        <button class="button button--secondary" type="button" data-rope-confirm disabled>
+          Konfiguration bestätigen
+        </button>
+      </div>
+      <p role="status" aria-live="polite" data-rope-overall-status></p>
+      <button class="button" type="submit" data-rope-submit disabled>In den Warenkorb</button>
+      <p>Die Warenkorbmenge entspricht der Anzahl gleicher Zuschnitte. Die Länge je Stück bleibt unverändert.</p>
       <p class="rope-configurator__error" role="alert" hidden data-rope-error></p>
+      <button class="button button--secondary" type="button" hidden data-rope-reload>
+        Konfigurator erneut laden
+      </button>
     </form>
+    <noscript>Bitte aktivieren Sie JavaScript, um Seile zu konfigurieren.</noscript>
   </div>
-
   <template data-rope-cut-template>
     <fieldset class="rope-cut">
-      <div class="rope-cut__field">
-        <label data-length-label>Länge dieses Zuschnitts (m)</label>
-        <input
-          type="number"
-          inputmode="decimal"
-          min="0.5"
-          max="500"
-          step="0.1"
-          value="1"
-          required
-          data-rope-length
-        >
-      </div>
-
-      <div class="rope-cut__presentation">
-        <span>Aufmachung</span>
-        <div class="rope-cut__options">
-          <label class="rope-cut__option">
-            <input type="radio" value="Ring" checked data-rope-presentation>
-            Ring
-          </label>
-          <label class="rope-cut__option">
-            <input type="radio" value="Haspel" data-rope-presentation>
-            Haspel
+      <legend>Zuschnitt</legend>
+      <fieldset class="rope-cut__inputs" data-rope-inputs>
+        <legend class="visually-hidden">Zuschnitt bearbeiten</legend>
+        <div class="rope-cut__field">
+          <label>
+            Anzahl Stück
+            <input type="number" min="1" max="999" step="1" value="1" required data-rope-quantity>
           </label>
         </div>
+        <div class="rope-cut__field">
+          <label>
+            Länge je Stück (m)
+            <input type="number" inputmode="decimal" min="0.5" max="500" step="0.1" value="1" required data-rope-length>
+          </label>
+        </div>
+      </fieldset>
+      <div class="rope-configurator__actions">
+        <button class="button button--secondary" type="button" data-rope-finish>Zuschnitt fertigstellen</button>
+        <button class="button button--secondary" type="button" data-rope-edit hidden>Bearbeiten</button>
+        <button class="button button--secondary" type="button" data-remove-rope-cut>Entfernen</button>
       </div>
-
-      <button class="rope-cut__remove" type="button" aria-label="Zuschnitt entfernen" title="Zuschnitt entfernen" data-remove-rope-cut>
-        &times;
-      </button>
+      <p role="status" aria-live="polite" data-rope-cut-status></p>
     </fieldset>
   </template>
 </section>
@@ -170,67 +144,31 @@
   data-disable-price-feature="true"
   defer
 ></script>
-
 <script
   src="/apps/hanfwolf-pricing/rope-configurator-script"
   data-form-id="RopeConfigurator-{{ section.id }}"
   data-section-id="{{ section.id }}"
-  data-product-id="{{ product.id }}"
-  data-variant-id="gid://shopify/ProductVariant/{{ product.selected_or_first_available_variant.id }}"
+  data-product-id="gid://shopify/Product/{{ product.id }}"
+  data-proxy-path="/apps/hanfwolf-pricing"
   data-cart-url="{{ routes.cart_url }}"
-  data-config-url="/apps/hanfwolf-pricing/config"
   defer
 ></script>
-
 {% schema %}
 {
   "name": "Seil-Konfigurator",
   "tag": "section",
   "class": "section",
+  "enabled_on": { "templates": ["product"] },
   "settings": [
+    { "type": "text", "id": "heading", "label": "Überschrift", "default": "Seil konfigurieren" },
     {
-      "type": "text",
-      "id": "heading",
-      "label": "Überschrift",
-      "default": "Seil konfigurieren"
+      "type": "text", "id": "description", "label": "Beschreibung",
+      "default": "Konfigurieren Sie Ihre Zuschnitte und prüfen Sie anschließend die Zusammenstellung."
     },
-    {
-      "type": "text",
-      "id": "description",
-      "label": "Beschreibung",
-      "default": "      Lege Länge und Aufmachung für jeden gewünschten Zuschnitt fest."
-    },
-    {
-      "type": "color_scheme",
-      "id": "color_scheme",
-      "label": "Farbschema",
-      "default": "scheme-1"
-    },
-    {
-      "type": "range",
-      "id": "padding_top",
-      "min": 0,
-      "max": 100,
-      "step": 4,
-      "unit": "px",
-      "label": "Abstand oben",
-      "default": 24
-    },
-    {
-      "type": "range",
-      "id": "padding_bottom",
-      "min": 0,
-      "max": 100,
-      "step": 4,
-      "unit": "px",
-      "label": "Abstand unten",
-      "default": 36
-    }
+    { "type": "color_scheme", "id": "color_scheme", "label": "Farbschema", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 100, "step": 4, "unit": "px", "label": "Abstand oben", "default": 24 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 100, "step": 4, "unit": "px", "label": "Abstand unten", "default": 36 }
   ],
-  "presets": [
-    {
-      "name": "Seil-Konfigurator"
-    }
-  ]
+  "presets": [{ "name": "Seil-Konfigurator" }]
 }
 {% endschema %}

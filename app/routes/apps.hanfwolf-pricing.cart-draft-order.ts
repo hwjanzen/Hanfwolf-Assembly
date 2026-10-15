@@ -242,6 +242,12 @@ export const action = async ({ request }: ActionFunctionArgs) => {
           { status: 400 },
         );
       }
+      if (item.properties._hanfwolf_configuration_id || variant.ropeConfiguration?.value.startsWith("v3|")) {
+        return Response.json(
+          { ok: false, error: "Konfigurierte Stückvarianten verwenden den nativen Shopify-Checkout, keine Draft Order." },
+          { status: 400 },
+        );
+      }
       if (!variant.ropeConfiguration?.value) continue;
 
       try {

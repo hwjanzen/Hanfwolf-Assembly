@@ -29,3 +29,84 @@ api_version = "2026-10"
 url = "https://hanfwolf-assembly-dwlt.onrender.com/apps/hanfwolf-pricing"
 subpath = "hanfwolf-pricing"
 prefix = "apps"
+
+[metaobjects.app.configuration_position]
+name = "Konfigurationsposition"
+display_name_field = "label"
+access.admin = "merchant_read_write"
+
+[metaobjects.app.configuration_position.fields.code]
+name = "Code"
+type = "single_line_text_field"
+required = true
+
+[metaobjects.app.configuration_position.fields.label]
+name = "Bezeichnung"
+type = "single_line_text_field"
+required = true
+
+[metaobjects.app.configuration_position.fields.required]
+name = "Pflichtauswahl"
+type = "boolean"
+required = true
+
+[metaobjects.app.configuration_position.fields.sort_order]
+name = "Sortierung"
+type = "number_integer"
+required = true
+
+[metaobjects.app.configuration_position.fields.active]
+name = "Aktiv"
+type = "boolean"
+required = true
+
+[metaobjects.app.component_mapping]
+name = "Konfigurationsfreigabe"
+display_name_field = "label"
+access.admin = "merchant_read_write"
+
+[metaobjects.app.component_mapping.fields.label]
+name = "Bezeichnung"
+type = "single_line_text_field"
+required = true
+
+[metaobjects.app.component_mapping.fields.base_product]
+name = "Basisartikel"
+type = "product_reference"
+required = true
+
+[metaobjects.app.component_mapping.fields.position]
+name = "Konfigurationsposition"
+type = "metaobject_reference<$app:configuration_position>"
+required = true
+
+[metaobjects.app.component_mapping.fields.component]
+name = "Komponentenvariante"
+type = "variant_reference"
+required = true
+
+[metaobjects.app.component_mapping.fields.quantity]
+name = "Komponentenmenge je Auswahl"
+type = "number_integer"
+required = true
+validations.min = "1"
+
+[metaobjects.app.component_mapping.fields.sort_order]
+name = "Sortierung"
+type = "number_integer"
+required = true
+
+[metaobjects.app.component_mapping.fields.active]
+name = "Aktiv"
+type = "boolean"
+required = true
+
+[product.metafields.app.configuration_positions]
+name = "Konfigurationspositionen"
+type = "list.metaobject_reference<$app:configuration_position>"
+access.admin = "merchant_read_write"
+
+[product.metafields.app.component_mappings]
+name = "Zulaessige Komponenten"
+type = "list.metaobject_reference<$app:component_mapping>"
+access.admin = "merchant_read_write"

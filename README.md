@@ -149,7 +149,7 @@ Hinweise:
 ### Legacy-Draft-Order-API fuer Seile
 
 Dieser separate API-Endpunkt wird vom Seil-Konfigurator nicht mehr verwendet.
-Der Konfigurator nutzt die native Shopify-Warenkorbabrechnung in dm (siehe
+Der Konfigurator nutzt native Shopify-Stueckvarianten pro Konfiguration (siehe
 unten). Die API bleibt fuer bestehende externe Aufrufer verfuegbar:
 
 Der signierte App-Proxy-Endpunkt `POST /apps/hanfwolf-pricing/draft-order`
@@ -206,52 +206,121 @@ berechnet und als eine Versandzeile `Standard` am Draft Order gesetzt:
 - ueber 50 bis 200 kg: 50 EUR
 - ueber 200 kg: 150 EUR
 
-### Seil-Konfigurator: native Shopify-Abrechnung in dm
+### Seil-Konfigurator: Komponenten und Stueckvarianten
 
-Der Theme-Konfigurator erzeugt keine Produktvarianten und berechnet keine
-Preise oder Gewichte. Jeder Zuschnitt ist eine eigene Warenkorbzeile mit der
-gewaehlten Shopify-Variante. Die Laenge wird in 0,1-m-Schritten eingegeben und
-als Warenkorbmenge in dm hinzugefuegt: 1,3 m entsprechen 13 Einheiten. Shopify
-berechnet den nativen Variantenpreis, das Versandgewicht und den Bestand je
-Einheit (1 dm). Daher muessen Preis und Gewicht der verwendeten Varianten in
-Shopify jeweils je 1 dm gepflegt sein; der Bestand wird ebenfalls in dm
-gefuehrt.
+Jeder fertiggestellte Zuschnitt erhaelt eine unveraenderliche Shopify-Variante
+mit Stueckpreis und Versandgewicht je Stueck. Die Warenkorbmenge ist die
+Stueckzahl: Menge 2 bei Laenge 2,5 m bedeutet zweimal 2,5 m, nicht 5 m am Stueck.
+Die Laenge bleibt eine Line-Item-Property. Bestandsverfolgung ist fuer erzeugte
+Varianten deaktiviert (`CONTINUE`, `tracked: false`).
 
-Die Laenge in Metern (z. B. `1,3 m`) und die Aufmachung (Ring/Haspel) werden als
-Line-Item-Properties gespeichert. Haspel verursacht keinen separaten Aufpreis.
-Eine versteckte, eindeutige Property sorgt dafuer, dass auch gleich konfigurierte
-Zuschnitte als getrennte Warenkorbzeilen erhalten bleiben.
+**Preise:** Die Stammdatenvariante behaelt Preis und Gewicht **je 1 dm**.
+Bei 0,10 EUR/dm kostet ein Zuschnitt von 2,5 m daher 2,50 EUR zuzueglich
+Komponenten. Je Auswahl werden aktueller Komponentenvariantenpreis und
+Komponentengewicht mit der gepflegten Komponentenmenge multipliziert und zum
+Zuschnitt addiert. Fuer zwei identische Kauschen an zwei Positionen werden beide
+berechnet. Stueckzahl multipliziert anschliessend den fertigen Stueckpreis.
+Berechnung erfolgt serverseitig in ganzen Cent; Browserpreise sind keine Preisquelle.
+Es gibt keinen festen Haspelaufschlag.
 
-Der Rope-Konfigurator fuegt Positionen direkt ueber `/cart/add.js` hinzu. Beim
-Aufruf von `finalizeCart` wird ein Warenkorb mit solchen Zuschnitten direkt an
-Shopifys Checkout uebergeben; er wird nicht in eine Draft Order umgerechnet.
-Der separate Draft-Order-Ablauf fuer Warenkoerbe ohne Konfigurator-Zuschnitte
-bleibt erhalten.
+#### Einrichtung und Deployment
 
-`POST /apps/hanfwolf-pricing/cart-draft-order` finalisiert Warenkoerbe ohne
-neue native Konfigurator-Zuschnitte in einer einzigen Draft Order. Der Request
-nimmt Shopify-Cart-Lines mit `variantId`, `quantity` und optionalen
-`properties` entgegen. Fuer bestehende Zuschnitt-Varianten liest der Endpunkt
-ausschliesslich das serverseitige Metafeld `hanfwolf.rope_configuration`; die
-Line-Properties aus dem Browser sind keine Preisquelle. Gewoehnliche Varianten
-werden als normale Draft-Order-Positionen uebernommen.
+1. Backend deployen und `npm run setup` ausfuehren (Prisma-Client und Migrationen).
+   Die SQLite-Datenbank muss auf persistentem Speicher liegen und von allen
+   App-Instanzen gemeinsam verwendet werden. Bei mehreren Hosts eine gemeinsame,
+   transaktionale Datenbank statt getrennter SQLite-Kopien verwenden.
+2. `npx shopify app config validate --json`, danach `npm run deploy`:
+   Die Definitionen aus [shopify.app.toml](shopify.app.toml) werden installiert.
+   Erforderliche Produktscopes, Inventar-Lesezugriff und Metaobjektzugriff autorisieren.
+3. Unter **Inhalte → Metaobjekte → Konfigurationsposition** Eintraege anlegen:
+   z. B. `end_1` / Endverbindung 1, `end_2` / Endverbindung 2 und
+   `presentation` / Aufmachung. Code und Bezeichnung muessen je Produkt eindeutig
+   sein; Bezeichnungen duerfen weder `Länge` sein noch mit `_` beginnen.
+   Pflichtauswahl, Sortierung (Ganzzahl) und Aktivstatus explizit setzen.
+4. Komponenten als reale Shopify-Produkte/-Varianten mit aktuellen Preisen und
+   Versandgewichten pflegen. Versandfaehige Komponenten brauchen positives Gewicht.
+   Eine kostenfreie Ring-Auswahl kann eine nicht versandfaehige 0-EUR-Komponente
+   sein; bei einer optionalen Position fuegt **Ohne** weder Kosten noch Gewicht hinzu.
+5. Unter **Konfigurationsfreigabe** je erlaubter Kombination einen Eintrag anlegen:
+   Basisartikel + Konfigurationsposition + Komponentenvariante, dazu angezeigte
+   Bezeichnung, Komponentenmenge (1–999), Sortierung und Aktivstatus.
+   Beispiel: A / Endverbindung 1 / Kausche A und A / Endverbindung 1 / Kausche B;
+   fuer Artikel B duerfen separat A und D freigegeben werden. Endverbindung 2
+   benoetigt eigene Freigaben. Durchmesser wird nicht automatisch ausgewertet.
+6. Am Seilprodukt die beiden App-Metafelder **Konfigurationspositionen** und
+   **Zulaessige Komponenten** mit den passenden Eintraegen befuellen.
+   Nur dort referenzierte, aktive Freigaben werden angeboten. Fremde Basisartikel,
+   fehlende Referenzen und leere Pflichtauswahlen werden explizit abgelehnt.
+   Unterstuetzt sind 1–30 aktive Positionen und bis zu 100 Referenzen je Liste.
+7. Genau eine Stammdatenvariante verwenden (bei mehreren Originalvarianten mit
+   `$app.is_default_configuration = true` markieren). Preis/Gewicht je dm pflegen.
+   Das Produkt muss aktiv und im Onlineshop veroeffentlicht sein; den erlaubten
+   Produkttyp und Laengen-/Stueckzahlgrenzen im **RopeConfigurator Setup** speichern.
+8. [sections/seile.liquid](sections/seile.liquid) **und**
+   [sections/rope-variant-status.liquid](sections/rope-variant-status.liquid) in
+   das aktive Theme kopieren. `seile` in die Seil-Produktvorlage einbinden und
+   diese den Seilartikeln zuweisen. Normale Variantenwahl, Mengenwahl, Kauf-
+   und Express-Checkout-Buttons dort entfernen: Konfigurationsvarianten sind
+   technische Varianten, keine vom Kunden waehlbaren Stammdaten.
+   Die Status-Section braucht keinen sichtbaren Block in der Produktvorlage.
 
-Das Theme-Skript stellt die folgenden Browser-APIs bereit:
+Bestehende dm-Warenkorbpositionen werden **nicht** automatisch in Stueckpositionen
+umgerechnet. Vor dem Umstieg alte Testwarenkoerbe leeren und neu konfigurieren.
+Die unveraenderten Dawn-Warenkorbskripte behandeln neue Mengen bereits als Stueck;
+eventuelle fruehere Anpassungen, die bei Mengenaenderung die Laengen-Property
+umschreiben, aus dem aktiven Theme entfernen.
 
-```js
-await window.HanfwolfPricing.addRopeCutToCart({
-  variantId: "gid://shopify/ProductVariant/123456789",
-  quantity: 13,
-  lengthMeters: 1.3,
-  presentation: "Ring",
-});
+#### Ablauf und Fehlerbehandlung
 
-await window.HanfwolfPricing.finalizeCart();
-```
+- **Zuschnitt fertigstellen** sperrt die Eingaben und startet sofort die
+  Vorbereitung. **Weiteren Zuschnitt hinzufuegen** ist danach verfuegbar,
+  auch wenn Shopify noch vorbereitet. Es gibt keine zehn globalen Dummy-Slots.
+- **Bestelluebersicht pruefen** zeigt Stueckzahl, Laenge, Komponenten,
+  Stueckpreis, Positionspreis und Summe; noch ausstehende Preise sind markiert.
+  Bearbeiten/Entfernen macht die abschliessende Bestaetigung ungueltig.
+- **Konfiguration bestaetigen** bestaetigt die Zusammenstellung.
+  **In den Warenkorb** wird erst freigegeben, wenn alle Varianten sowohl im
+  Admin als auch tatsaechlich im Storefront kaufbar sind.
+  Die gezielte Theme-Statusabfrage funktioniert auch jenseits der 250 Varianten
+  im Produkt-AJAX-JSON. Aktuell wird nur die Shop-Waehrung ohne abweichende
+  Markets-/B2B-Kontextpreise unterstuetzt; Abweichungen werden nicht verschwiegen.
+- Vorbereitung ist begrenzt (90 Sekunden inkl. Requests; einzelne Requests mit
+  Timeout). Bei Fehlern erscheint **Erneut versuchen**, kein endloser Ladezustand.
+  Eine Datenbank-Lease verhindert parallele Neuerstellung derselben Konfiguration;
+  nach abgebrochener Erstellung wird die vorhandene Variante anhand ihres Markers
+  wiedergefunden. Eine unterbrochene Lease laeuft nach 120 Sekunden aus.
+- Alle fertigen Zuschnitte werden gemeinsam mit einem `/cart/add.js`-Request
+  hinzugefuegt. Stabile Zuschnitt-IDs und ein Warenkorbabgleich verhindern bei
+  Wiederholung nach unklarer Netzwerkantwort doppelte Positionen. Nicht gleichzeitig
+  denselben Browserwarenkorb aus mehreren Tabs abschicken.
+- Erzeugte Varianten niemals nachtraeglich bepreisen oder umkonfigurieren.
+  Die ID ist ein Hash aus Shop, Ausgangsvariante, Laenge, gewaehlten Komponenten,
+  deren Preisen/Gewichten und Bezeichnungen. Identische Preisstaende werden
+  wiederverwendet; Aenderungen erzeugen eine neue Variante. Shopifys Varianten-
+  und taegliche Erstellungslimits gelten weiterhin; Fehler werden angezeigt.
 
-Der Konfigurator ruft `addRopeCutToCart` anstelle seiner bisherigen
-Draft-Order-Anfrage auf. Der B2B-Warenkorb-Button muss `finalizeCart` aufrufen
-und darf danach nicht den normalen Shopify-Checkout oeffnen.
+`POST /apps/hanfwolf-pricing/prepare` nimmt `productId`, `quantity`, `lengthMeters`,
+`selections: [{ positionId, mappingId }]` und eine stabile `requestId` entgegen.
+`mappingId: null` ist nur fuer optionale Positionen erlaubt.
+`GET .../prepare?id=<configurationId>` prueft Vorbereitung und Varianteninvarianten.
+`GET .../config?productId=<Product-GID>` liefert die erlaubten Dropdownoptionen.
+Alle Endpunkte verwenden den signierten App-Proxy und `Cache-Control: no-store`.
+
+Snapshots werden in `RopeConfiguration`, Auswahlereignisse einschliesslich Shop,
+Artikelbezug, signiertem Kundenbezug (falls angemeldet) und Stueckzahl in
+`RopeConfigurationSelection` gespeichert. Die Auswahlhistorie ist **keine**
+Bestellhistorie; ein Order-Webhook/Order-Link sowie Aufbewahrungs-/Loeschregeln
+fuer Kundenanalysen sind vor produktiver Auswertung separat einzurichten.
+Die Metaobjekte sind Stammdatenfreigaben, nicht mutable Kundenkonfigurationen.
+Verschachtelte BOMs, wiederholbare Stranggruppen und Regeln zwischen zwei
+Auswahlen sind noch nicht enthalten; weitere flache Positionen sind moeglich.
+
+Das Theme-Skript stellt `HanfwolfPricing.addConfiguredCutsToCart(items)` und
+`HanfwolfPricing.finalizeCart()` bereit. Warenkoerbe mit Konfigurationsmarkern
+gehen nativ zum Shopify-Checkout; andere Warenkoerbe behalten den bisherigen
+Draft-Order-Ablauf. Der direkte `cart-draft-order`-Endpunkt lehnt v3-Konfigurationen
+explizit ab. Die separaten alten Meterpreis-/Haspel-Draft-Order-APIs sind nur fuer
+bisherige externe Aufrufer bestimmt und nicht mit diesem Modell zu mischen.
 
 ### Authenticating and querying data
 

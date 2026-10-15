@@ -1,0 +1,16 @@
+{%- assign configuration_variant = product.selected_variant -%}
+<script type="application/json" data-rope-variant-status>
+  {
+    "id": {{ configuration_variant.id | json }},
+    "available": {{ configuration_variant.available | default: false | json }},
+    "price": {{ configuration_variant.price | json }},
+    "currency": {{ cart.currency.iso_code | json }}
+  }
+</script>
+{% schema %}
+{
+  "name": "Konfigurator-Status",
+  "settings": [],
+  "enabled_on": { "templates": ["product"] }
+}
+{% endschema %}
