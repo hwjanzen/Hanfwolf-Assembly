@@ -427,6 +427,25 @@ export async function ensureRopeDefaultConfigurationMetafieldDefinition(
 export async function ensureSurfaceDefinitions(
   admin: unknown,
 ): Promise<SurfaceDefinitionsResult> {
+  return ensureReferenceAttributeDefinitions(admin, {
+    key: "oberflaeche",
+    name: "Oberfläche",
+    metaobjectType: "enattoberflaeche",
+    metaobjectName: "enAttOberfläche",
+  });
+}
+
+type ReferenceAttribute = {
+  key: string;
+  name: string;
+  metaobjectType: string;
+  metaobjectName: string;
+};
+
+async function ensureReferenceAttributeDefinitions(
+  admin: unknown,
+  attribute: ReferenceAttribute,
+): Promise<SurfaceDefinitionsResult> {
   const existingResult = await adminGraphql<{
     metaobjectDefinitionByType: {
       id: string;
@@ -444,8 +463,8 @@ export async function ensureSurfaceDefinitions(
   }>(
     admin,
     `#graphql
-    query BootstrapSurfaceDefinitions {
-      metaobjectDefinitionByType(type: "enattoberflaeche") {
+    query BootstrapSurfaceDefinitions($type: String!, $key: String!) {
+      metaobjectDefinitionByType(type: $type) {
         id
         displayNameKey
         access { storefront }
@@ -455,7 +474,7 @@ export async function ensureSurfaceDefinitions(
         first: 1
         ownerType: PRODUCT
         namespace: "custom"
-        key: "oberflaeche"
+        key: $key
       ) {
         nodes {
           type { name }
@@ -464,9 +483,10 @@ export async function ensureSurfaceDefinitions(
         }
       }
     }`,
+    { type: attribute.metaobjectType, key: attribute.key },
   );
   if (!existingResult.ok) {
-    throw new Error(`Failed to read surface definitions: ${existingResult.errors.join(" | ")}`);
+    throw new Error(`Failed to read ${attribute.key} definitions: ${existingResult.errors.join(" | ")}`);
   }
 
   const existingMetaobject = existingResult.data.metaobjectDefinitionByType;
@@ -480,7 +500,7 @@ export async function ensureSurfaceDefinitions(
       existingMetaobject.access.storefront !== "PUBLIC_READ"
     ) {
       throw new Error(
-        "Metaobject enattoberflaeche exists with an incompatible definition. Expected optional single-line text field value, display name value and PUBLIC_READ storefront access. No existing definition was changed.",
+        `Metaobject ${attribute.metaobjectType} exists with an incompatible definition. Expected optional single-line text field value, display name value and PUBLIC_READ storefront access. No existing definition was changed.`,
       );
     }
   }
@@ -498,7 +518,7 @@ export async function ensureSurfaceDefinitions(
     )
   ) {
     throw new Error(
-      "Product metafield custom.oberflaeche exists with an incompatible definition. Expected a single reference to enattoberflaeche with PUBLIC_READ storefront access. No existing definition was changed.",
+      `Product metafield custom.${attribute.key} exists with an incompatible definition. Expected a single reference to ${attribute.metaobjectType} with PUBLIC_READ storefront access. No existing definition was changed.`,
     );
   }
 
@@ -520,9 +540,9 @@ export async function ensureSurfaceDefinitions(
       }`,
       {
         definition: {
-          name: "enAttOberfläche",
-          type: "enattoberflaeche",
-          description: "Oberfläche",
+          name: attribute.metaobjectName,
+          type: attribute.metaobjectType,
+          description: attribute.name,
           displayNameKey: "value",
           access: { storefront: "PUBLIC_READ" },
           fieldDefinitions: [
@@ -532,11 +552,11 @@ export async function ensureSurfaceDefinitions(
       },
     );
     if (!result.ok) {
-      throw new Error(`Failed to create enattoberflaeche: ${result.errors.join(" | ")}`);
+      throw new Error(`Failed to create ${attribute.metaobjectType}: ${result.errors.join(" | ")}`);
     }
-    assertNoUserErrors(result.data.metaobjectDefinitionCreate.userErrors, "Create enattoberflaeche");
+    assertNoUserErrors(result.data.metaobjectDefinitionCreate.userErrors, `Create ${attribute.metaobjectType}`);
     metaobjectId = result.data.metaobjectDefinitionCreate.metaobjectDefinition?.id;
-    if (!metaobjectId) throw new Error("Create enattoberflaeche returned no id.");
+    if (!metaobjectId) throw new Error(`Create ${attribute.metaobjectType} returned no id.`);
   }
 
   if (!existingMetafield) {
@@ -556,9 +576,9 @@ export async function ensureSurfaceDefinitions(
       }`,
       {
         definition: {
-          name: "Oberfläche",
+          name: attribute.name,
           namespace: "custom",
-          key: "oberflaeche",
+          key: attribute.key,
           ownerType: "PRODUCT",
           type: "metaobject_reference",
           access: { storefront: "PUBLIC_READ" },
@@ -567,17 +587,107 @@ export async function ensureSurfaceDefinitions(
       },
     );
     if (!result.ok) {
-      throw new Error(`Failed to create custom.oberflaeche: ${result.errors.join(" | ")}`);
+      throw new Error(`Failed to create custom.${attribute.key}: ${result.errors.join(" | ")}`);
     }
-    assertNoUserErrors(result.data.metafieldDefinitionCreate.userErrors, "Create custom.oberflaeche");
+    assertNoUserErrors(result.data.metafieldDefinitionCreate.userErrors, `Create custom.${attribute.key}`);
     if (!result.data.metafieldDefinitionCreate.createdDefinition?.id) {
-      throw new Error("Create custom.oberflaeche returned no id.");
+      throw new Error(`Create custom.${attribute.key} returned no id.`);
     }
   }
   return {
     metaobject: existingMetaobject ? "exists" : "created",
     productMetafield: existingMetafield ? "exists" : "created",
   };
+}
+
+async function ensureMinimumBreakingForceDefinition(admin: unknown): Promise<BootstrapStatus> {
+  const existingResult = await adminGraphql<{
+    metafieldDefinitions: {
+      nodes: Array<{ type: { name: string }; access: { storefront: string } }>;
+    };
+  }>(
+    admin,
+    `#graphql
+    query BootstrapMinimumBreakingForceDefinition {
+      metafieldDefinitions(
+        first: 1
+        ownerType: PRODUCT
+        namespace: "custom"
+        key: "mindestbruchkraft"
+      ) {
+        nodes { type { name } access { storefront } }
+      }
+    }`,
+  );
+  if (!existingResult.ok) {
+    throw new Error(`Failed to read custom.mindestbruchkraft: ${existingResult.errors.join(" | ")}`);
+  }
+  const existing = existingResult.data.metafieldDefinitions.nodes[0];
+  if (existing) {
+    if (existing.type.name !== "number_decimal" || existing.access.storefront !== "PUBLIC_READ") {
+      throw new Error(
+        "Product metafield custom.mindestbruchkraft exists with an incompatible definition. Expected number_decimal with PUBLIC_READ storefront access. No existing definition was changed.",
+      );
+    }
+    return "exists";
+  }
+  const result = await adminGraphql<{
+    metafieldDefinitionCreate: {
+      createdDefinition: { id: string } | null;
+      userErrors: UserError[];
+    };
+  }>(
+    admin,
+    `#graphql
+    mutation BootstrapCreateMinimumBreakingForce($definition: MetafieldDefinitionInput!) {
+      metafieldDefinitionCreate(definition: $definition) {
+        createdDefinition { id }
+        userErrors { field message code }
+      }
+    }`,
+    {
+      definition: {
+        name: "Mindestbruchkraft kN",
+        namespace: "custom",
+        key: "mindestbruchkraft",
+        ownerType: "PRODUCT",
+        type: "number_decimal",
+        access: { storefront: "PUBLIC_READ" },
+      },
+    },
+  );
+  if (!result.ok) {
+    throw new Error(`Failed to create custom.mindestbruchkraft: ${result.errors.join(" | ")}`);
+  }
+  assertNoUserErrors(result.data.metafieldDefinitionCreate.userErrors, "Create custom.mindestbruchkraft");
+  if (!result.data.metafieldDefinitionCreate.createdDefinition?.id) {
+    throw new Error("Create custom.mindestbruchkraft returned no id.");
+  }
+  return "created";
+}
+
+export async function ensureProductAttributeDefinitions(admin: unknown) {
+  const surface = await ensureSurfaceDefinitions(admin);
+  const diameter = await ensureReferenceAttributeDefinitions(admin, {
+    key: "durchmesser",
+    name: "Durchmesser",
+    metaobjectType: "enattdurchmesser",
+    metaobjectName: "enAttDurchmesser",
+  });
+  const lay = await ensureReferenceAttributeDefinitions(admin, {
+    key: "schlagart",
+    name: "Schlagart",
+    metaobjectType: "enattributschlagart",
+    metaobjectName: "enAttributSchlagart",
+  });
+  const strength = await ensureReferenceAttributeDefinitions(admin, {
+    key: "festigkeitsklasse",
+    name: "Festigkeitsklasse",
+    metaobjectType: "enattfestigkeitsklasse",
+    metaobjectName: "enAttFestigkeitsklasse",
+  });
+  const minimumBreakingForce = await ensureMinimumBreakingForceDefinition(admin);
+  return { surface, diameter, lay, strength, minimumBreakingForce };
 }
 
 export async function ensurePricingBootstrap(admin: any): Promise<BootstrapResult> {

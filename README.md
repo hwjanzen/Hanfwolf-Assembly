@@ -40,12 +40,24 @@ The public Render URL is `https://hanfwolf-assembly-dwlt.onrender.com`. If it ch
 
 ## Hanfwolf Assembly Workflow (Custom Variant Prices)
 
-### Surface definitions
+### Product attribute definitions
 
 On authentication and when opening the app home, the bootstrap creates missing
-merchant-owned definitions for `enattoberflaeche` (display name `enAttOberfläche`,
-optional single-line text field `value`) and the single product reference
-`custom.oberflaeche`. Both definitions allow Storefront API reads. Existing
+merchant-owned definitions for the following attributes:
+
+| Product metafield | Metaobject type | Metaobject display name |
+| --- | --- | --- |
+| `custom.oberflaeche` | `enattoberflaeche` | enAttOberfläche |
+| `custom.durchmesser` | `enattdurchmesser` | enAttDurchmesser |
+| `custom.schlagart` | `enattributschlagart` | enAttributSchlagart |
+| `custom.festigkeitsklasse` | `enattfestigkeitsklasse` | enAttFestigkeitsklasse |
+
+Each metaobject has the optional single-line text field `value` (label `Value`,
+also used for entry display names). Each product metafield is a single reference.
+`custom.mindestbruchkraft` is a direct `number_decimal` product field named
+`Mindestbruchkraft kN`; no metaobject is created for it.
+
+All definitions allow Storefront API reads. Existing
 definitions are checked for compatible types, reference target, display field
 and storefront access; conflicts are logged by the bootstrap callers without
 overwriting existing definitions.
@@ -58,6 +70,8 @@ to the Seile category, or configure Search & Discovery filters. Create entries
 and assign them to products in Shopify, then select the product metafield as a
 filter in Search & Discovery. Admin API filtering is a separate capability and
 is not enabled by this bootstrap.
+If an attribute fails, the attribute bootstrap stops and retries on the next load;
+definitions already created remain in place and are reused.
 
 ### Wann welche Befehle ausfuehren
 

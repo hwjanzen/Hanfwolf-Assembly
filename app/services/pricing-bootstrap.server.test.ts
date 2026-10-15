@@ -1,5 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
-import { ensureSurfaceDefinitions } from "./pricing-bootstrap.server";
+import {
+  ensureProductAttributeDefinitions,
+  ensureSurfaceDefinitions,
+} from "./pricing-bootstrap.server";
 
 const metaobjectId = "gid://shopify/MetaobjectDefinition/123";
 
@@ -45,13 +48,151 @@ const createdMetafield = {
 };
 
 describe("surface definition bootstrap", () => {
+    const referenceAttributes = [
+      ["oberflaeche", "Oberfläche", "enattoberflaeche", "enAttOberfläche"],
+      ["durchmesser", "Durchmesser", "enattdurchmesser", "enAttDurchmesser"],
+      ["schlagart", "Schlagart", "enattributschlagart", "enAttributSchlagart"],
+      ["festigkeitsklasse", "Festigkeitsklasse", "enattfestigkeitsklasse", "enAttFestigkeitsklasse"],
+    ];
+
+    function existingReferences() {
+      return referenceAttributes.map(() => ({ data: existingDefinitions() }));
+    }
+
+    function existingDecimal() {
+      return { data: { metafieldDefinitions: { nodes: [{
+        type: { name: "number_decimal" }, access: { storefront: "PUBLIC_READ" },
+      }] } } };
+    }
+
+    describe("all product attribute definitions", () => {
+      it("creates four reference schemas and one direct decimal field without data writes", async () => {
+        const responses = referenceAttributes.flatMap((_, index) => [
+          { data: { metaobjectDefinitionByType: null, metafieldDefinitions: { nodes: [] } } },
+          { data: { metaobjectDefinitionCreate: {
+            metaobjectDefinition: { id: `${metaobjectId}${index}` }, userErrors: [],
+          } } },
+          { data: createdMetafield },
+        ]);
+        const admin = mockAdmin(
+          ...responses,
+          { data: { metafieldDefinitions: { nodes: [] } } },
+          { data: createdMetafield },
+        );
+        await expect(ensureProductAttributeDefinitions(admin)).resolves.toEqual({
+          surface: { metaobject: "created", productMetafield: "created" },
+          diameter: { metaobject: "created", productMetafield: "created" },
+          lay: { metaobject: "created", productMetafield: "created" },
+          strength: { metaobject: "created", productMetafield: "created" },
+          minimumBreakingForce: "created",
+        });
+        expect(admin.graphql).toHaveBeenCalledTimes(14);
+        referenceAttributes.forEach(([key, name, type, metaobjectName], index) => {
+          expect(admin.graphql.mock.calls[index * 3][1]).toEqual({
+            variables: { type, key },
+          });
+          expect(admin.graphql.mock.calls[index * 3 + 1][1]).toEqual({
+            variables: { definition: {
+              name: metaobjectName,
+              type,
+              description: name,
+              displayNameKey: "value",
+              access: { storefront: "PUBLIC_READ" },
+              fieldDefinitions: [{
+                key: "value", name: "Value", type: "single_line_text_field", required: false,
+              }],
+            } },
+          });
+          expect(admin.graphql.mock.calls[index * 3 + 2][1]).toEqual({
+            variables: { definition: {
+              name, namespace: "custom", key, ownerType: "PRODUCT",
+              type: "metaobject_reference",
+              access: { storefront: "PUBLIC_READ" },
+              validations: [{ name: "metaobject_definition_id", value: `${metaobjectId}${index}` }],
+            } },
+          });
+        });
+        expect(admin.graphql.mock.calls[13][1]).toEqual({
+          variables: { definition: {
+            name: "Mindestbruchkraft kN", namespace: "custom", key: "mindestbruchkraft",
+            ownerType: "PRODUCT", type: "number_decimal",
+            access: { storefront: "PUBLIC_READ" },
+          } },
+        });
+        for (const [query] of admin.graphql.mock.calls) {
+          expect(query).not.toMatch(/metaobjectCreate|metaobjectUpsert|metafieldsSet|DefinitionUpdate|DefinitionDelete/);
+        }
+      });
+
+      it("reuses all five existing definitions on repeated loads", async () => {
+        const admin = mockAdmin(
+          ...existingReferences(), existingDecimal(),
+          ...existingReferences(), existingDecimal(),
+        );
+        for (let run = 0; run < 2; run++) {
+          const result = await ensureProductAttributeDefinitions(admin);
+          expect(result).toEqual({
+            surface: { metaobject: "exists", productMetafield: "exists" },
+            diameter: { metaobject: "exists", productMetafield: "exists" },
+            lay: { metaobject: "exists", productMetafield: "exists" },
+            strength: { metaobject: "exists", productMetafield: "exists" },
+            minimumBreakingForce: "exists",
+          });
+        }
+        expect(admin.graphql).toHaveBeenCalledTimes(10);
+        expect(admin.graphql.mock.calls.every(([query]) => !query.includes("mutation"))).toBe(true);
+      });
+
+      it.each([1, 2, 3])("reports the actual attribute for schema conflict at index %s", async (index) => {
+        const existing = existingDefinitions();
+        existing.metafieldDefinitions.nodes[0].type.name = "number_decimal";
+        const admin = mockAdmin(...existingReferences().slice(0, index), { data: existing });
+        await expect(ensureProductAttributeDefinitions(admin))
+          .rejects.toThrow(`custom.${referenceAttributes[index][0]} exists with an incompatible`);
+        expect(admin.graphql).toHaveBeenCalledTimes(index + 1);
+      });
+
+      it.each(["type", "access"])("rejects an incompatible decimal %s", async (conflict) => {
+        const existing = existingDecimal();
+        const definition = existing.data.metafieldDefinitions.nodes[0];
+        if (conflict === "type") definition.type.name = "metaobject_reference";
+        if (conflict === "access") definition.access.storefront = "NONE";
+        const admin = mockAdmin(...existingReferences(), existing);
+        await expect(ensureProductAttributeDefinitions(admin))
+          .rejects.toThrow("custom.mindestbruchkraft exists with an incompatible");
+        expect(admin.graphql).toHaveBeenCalledTimes(5);
+      });
+
+      it("propagates decimal lookup errors", async () => {
+        const admin = mockAdmin(...existingReferences(), { errors: [{ message: "Decimal lookup denied" }] });
+        await expect(ensureProductAttributeDefinitions(admin)).rejects.toThrow("Decimal lookup denied");
+      });
+
+      it.each(["graphql", "userErrors", "missing id"])("reports decimal creation %s failure", async (failure) => {
+        const response = failure === "graphql"
+          ? { errors: [{ message: "Decimal creation denied" }] }
+          : { data: { metafieldDefinitionCreate: {
+            createdDefinition: null,
+            userErrors: failure === "userErrors" ? [{ message: "Invalid decimal" }] : [],
+          } } };
+        const admin = mockAdmin(
+          ...existingReferences(),
+          { data: { metafieldDefinitions: { nodes: [] } } },
+          response,
+        );
+        await expect(ensureProductAttributeDefinitions(admin)).rejects.toThrow(
+          failure === "graphql" ? "Decimal creation denied"
+            : failure === "userErrors" ? "Invalid decimal" : "returned no id",
+        );
+        expect(admin.graphql).toHaveBeenCalledTimes(6);
+      });
+    });
   it("creates only the agreed definitions, in reference dependency order", async () => {
     const admin = mockAdmin(
       { data: { metaobjectDefinitionByType: null, metafieldDefinitions: { nodes: [] } } },
       { data: createdMetaobject },
       { data: createdMetafield },
     );
-
     await expect(ensureSurfaceDefinitions(admin)).resolves.toEqual({
       metaobject: "created", productMetafield: "created",
     });

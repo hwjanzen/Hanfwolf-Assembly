@@ -8,7 +8,7 @@ import { PrismaSessionStorage } from "@shopify/shopify-app-session-storage-prism
 import prisma from "./db.server";
 import {
   ensurePricingBootstrap,
-  ensureSurfaceDefinitions,
+  ensureProductAttributeDefinitions,
 } from "./services/pricing-bootstrap.server";
 
 const shopify = shopifyApp({
@@ -26,13 +26,13 @@ const shopify = shopifyApp({
   hooks: {
     afterAuth: async ({ admin, session }) => {
       try {
-        const definitions = await ensureSurfaceDefinitions(admin);
-        console.info("Surface definitions bootstrap finished", {
+        const definitions = await ensureProductAttributeDefinitions(admin);
+        console.info("Product attribute definitions bootstrap finished", {
           shop: session.shop,
           definitions,
         });
       } catch (error) {
-        console.error("Surface definitions bootstrap failed", {
+        console.error("Product attribute definitions bootstrap failed", {
           shop: session.shop,
           error: error instanceof Error ? error.message : String(error),
         });
