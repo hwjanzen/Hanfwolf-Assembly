@@ -1,0 +1,118 @@
+/* HW20261021: Separate overrides preserve merchant font-size customizations. */
+.facets-container,
+facet-filters-form {
+  --collection-filter-bg: #f7faf5;
+  --collection-filter-bg-hover: #edf5e8;
+  --collection-filter-border: #b1c6a8;
+  --collection-filter-border-hover: #557d49;
+  --collection-filter-text: #20341d;
+}
+
+.facets-container facet-filters-form .facets__wrapper {
+  --collection-filter-bg: #f7faf5;
+  --collection-filter-bg-hover: #edf5e8;
+  --collection-filter-border: #b1c6a8;
+  --collection-filter-height: 4.8rem;
+  --collection-filter-width: 100%;
+}
+
+/* HW20261021 Original base rule: .product-count { display: none; } */
+.facets-container .product-count {
+  display: block;
+  align-self: center;
+  margin: 0;
+}
+
+.facets-container .facets__disclosure,
+facet-filters-form .facets__disclosure {
+  box-sizing: border-box;
+  min-width: 0;
+  margin: 0;
+  border-radius: 0.6rem;
+  box-shadow: none;
+}
+
+.facets-container .facets__summary,
+facet-filters-form .facets__summary {
+  box-sizing: border-box;
+  min-height: var(--collection-filter-height, 4.8rem);
+  padding: 0.9rem 2.4rem 0.9rem 1rem;
+  border-radius: 0.6rem;
+  font-weight: 600;
+}
+
+.facets-container .facets__summary .icon-caret,
+facet-filters-form .facets__summary .icon-caret {
+  right: 1rem;
+}
+
+.facets-container .facets__disclosure:hover,
+.facets-container .facets__disclosure:focus-within,
+.facets-container .facets__disclosure[open],
+facet-filters-form .facets__disclosure:hover,
+facet-filters-form .facets__disclosure:focus-within,
+facet-filters-form .facets__disclosure[open] {
+  box-shadow: none;
+}
+
+.facets-container .facets__disclosure[open],
+facet-filters-form .facets__disclosure[open] {
+  border-color: var(--collection-filter-border-hover);
+  background: var(--collection-filter-bg-hover);
+}
+
+.facets-container .facets__display,
+facet-filters-form .facets__display {
+  cursor: auto;
+  text-align: left;
+  box-shadow: 0 0.4rem 1.2rem rgba(57, 92, 48, 0.1);
+}
+
+.facets-container .active-facets__button-inner,
+facet-filters-form .active-facets__button-inner {
+  box-shadow: none;
+}
+
+@media screen and (min-width: 750px) {
+  .facets-container .facets__form {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .facets-container .facets__wrapper,
+  facet-filters-form .facets__wrapper {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    gap: 1rem;
+    width: 100%;
+    margin-bottom: 1rem;
+  }
+
+  .facets-container .facets__display,
+  facet-filters-form .facets__display {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: max(100%, 25rem);
+    max-width: calc(100vw - 4rem);
+    margin-top: 0.6rem;
+  }
+
+  .facets-container .facets__disclosure:last-of-type .facets__display,
+  facet-filters-form .facets__disclosure:last-of-type .facets__display {
+    left: auto;
+    right: 0;
+  }
+
+  .facets-container .facets__list,
+  facet-filters-form .facets__list {
+    max-height: 32rem;
+    overflow-y: auto;
+  }
+}
+
+@media screen and (min-width: 990px) {
+  .facets-container .facets__wrapper,
+  facet-filters-form .facets__wrapper {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}

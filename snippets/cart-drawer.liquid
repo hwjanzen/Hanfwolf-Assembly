@@ -196,7 +196,7 @@
                                   <div class="product-option">
                                     <dt>{{ option.name }}:</dt>
                                     <dd>
-                                      {{ option.value -}}
+                                      {%- render 'cart-configuration-option-value', item: item, option: option -%}
                                       {%- unless forloop.last %}, {% endunless %}
                                     </dd>
                                   </div>

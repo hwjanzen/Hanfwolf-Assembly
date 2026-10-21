@@ -1,0 +1,13 @@
+{%- liquid
+  assign display_value = option.value
+  if item.properties._hanfwolf_configuration_id != blank and item.properties._hanfwolf_quantity_unit == 'piece'
+    if option.value contains 'Zuschnitt '
+      assign length_meters = item.properties['Länge'] | remove: ' m' | replace: ',', '.' | plus: 0
+      assign length_decimeters = length_meters | times: 10 | round
+      if length_decimeters > 0
+        assign display_value = 'Zuschnitt - ' | append: length_decimeters | append: 'dm'
+      endif
+    endif
+  endif
+-%}
+{{- display_value | escape -}}

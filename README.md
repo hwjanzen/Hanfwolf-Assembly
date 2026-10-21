@@ -40,6 +40,51 @@ The public Render URL is `https://hanfwolf-assembly-dwlt.onrender.com`. If it ch
 
 ## Hanfwolf Assembly Workflow (Custom Variant Prices)
 
+### Collection filter Theme assets
+
+Copy [component-collection-filters.css](assets/component-collection-filters.css),
+[component-collection-filters.js](assets/component-collection-filters.js) and
+[collection-filter-enhancements.liquid](snippets/collection-filter-enhancements.liquid)
+into the active theme's matching directories. Render
+`{% render 'collection-filter-enhancements' %}` once in the collection section
+after Dawn's filter CSS, replacing any separate inclusion of the custom CSS.
+The collection section is not included in this repository and must be wired in
+the active theme; deploying the app alone does not update these assets.
+
+Desktop filter lists stay open on selection and close on outside clicks or
+Escape, including after AJAX markup replacement. Mobile drawer behavior remains
+with Dawn. Caption hover underlines and inner hover shadows are suppressed;
+keyboard focus remains visible. The filter container does not move on hover.
+
+The `HW20261021` design update loads
+[collection-filter-design.css](assets/collection-filter-design.css) after the
+existing custom CSS. Copy this additional asset and the updated enhancement
+snippet and JavaScript into the active theme; keep the theme's existing
+`component-collection-filters.css` with its customized font sizes.
+The design overrides do not set font sizes. Desktop uses five columns from
+990px and an auto-fit grid from 750px; the mobile Dawn drawer stays unchanged.
+Dropdowns overlay the page instead of pushing the products down, and the native
+product count, active filter chips and reset controls remain managed by Dawn.
+German filter captions are normalized in the DOM (Surface → Oberfläche,
+Art des Schlags → Schlagart, Mindestbruchkraft in kN → Mindestbruchkraft (kN)).
+Only exact caption text is changed, also after AJAX updates; underlying filter
+parameters, product data and other storefront languages stay unchanged.
+The exact collection heading HaWo - Seile is displayed as HaWo – Seile.
+No manual product-count calculation or replacement filtering logic is added.
+
+### Configured variant names in the cart
+
+Copy [cart-configuration-option-value.liquid](snippets/cart-configuration-option-value.liquid),
+[main-cart-items.liquid](sections/main-cart-items.liquid) and
+[cart-drawer.liquid](snippets/cart-drawer.liquid) to the active theme, merging any
+theme-specific customizations. Both cart views render the technical configuration
+option as `Zuschnitt - 50dm` for a 5 m cut (`5dm` for 0.5 m).
+The display derives from the per-piece `Länge` property, not the cart quantity.
+Other variant options and ordinary products retain their existing values.
+Existing configured cart lines also use this display after the theme update.
+Shopify variant option values, hashes, SKUs, prices and checkout names remain
+unchanged; no variants are renamed or created by this presentation change.
+
 ### Product attribute definitions
 
 On authentication and when opening the app home, the bootstrap creates missing

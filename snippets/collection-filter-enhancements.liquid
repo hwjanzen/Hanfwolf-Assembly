@@ -1,0 +1,4 @@
+{{ 'component-collection-filters.css' | asset_url | stylesheet_tag }}
+{% comment %}HW20261021 Design overrides loaded separately to preserve existing font sizes.{% endcomment %}
+{{ 'collection-filter-design.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'component-collection-filters.js' | asset_url }}" defer="defer"></script>
