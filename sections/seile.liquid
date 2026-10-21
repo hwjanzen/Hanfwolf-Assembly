@@ -61,6 +61,9 @@
   }
 {%- endstyle -%}
 
+{% comment %}HW20261021 Anthrazit-/Silber-Design separat laden; bestehende Basisregeln bleiben erhalten.{% endcomment %}
+{{ 'rope-configurator-design.css' | asset_url | stylesheet_tag }}
+
 <section
   class="rope-configurator-{{ section.id }} color-{{ section.settings.color_scheme }} gradient"
   data-rope-configurator-section

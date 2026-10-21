@@ -1,0 +1,208 @@
+/* HW20261021: Scoped presentation only; native cart and search behavior is unchanged. */
+.hanfwolf-product-card .card__inner {
+  --ratio-percent: 100% !important;
+  background: #ffffff;
+}
+
+.hanfwolf-product-card .card__media .media > img {
+  object-fit: contain;
+}
+
+/* HW20261021: Do not inherit optional Dawn lift/zoom animations on these cards. */
+.hanfwolf-product-card:hover .card,
+.hanfwolf-product-card:hover .card__inner,
+.hanfwolf-product-card:hover .card__media .media > img,
+:is(.animate--hover-3d-lift, .animate--hover-vertical-lift) .hanfwolf-product-card:hover .card,
+:is(.animate--hover-3d-lift, .animate--hover-vertical-lift) .hanfwolf-product-card:hover .card__inner {
+  transform: none;
+}
+
+.hanfwolf-product-card .card__heading {
+  min-height: 7.2rem;
+  font-size: 1.6rem;
+  line-height: 1.5;
+}
+
+.hanfwolf-product-card .card__information {
+  padding-top: 1.6rem;
+}
+
+.hanfwolf-product-card .hanfwolf-configuration-price {
+  color: #555d67;
+  font-size: 1.4rem;
+  letter-spacing: 0;
+}
+
+.hanfwolf-product-card .card {
+  border-radius: 0.6rem;
+  outline: 1px solid transparent;
+}
+
+.hanfwolf-product-card:hover .card,
+.hanfwolf-product-card:focus-within .card {
+  outline-color: #158d45;
+}
+
+cart-items .cart-item__name,
+cart-drawer .cart-item__name {
+  font-size: 1.6rem;
+  line-height: 1.5;
+}
+
+cart-items .cart-item__details > .product-option,
+cart-drawer .cart-item__details > .product-option {
+  font-size: 1.5rem;
+}
+
+cart-items .cart-item__details dl,
+cart-drawer .cart-item__details dl {
+  display: grid;
+  gap: 0.4rem;
+  margin-top: 1rem;
+}
+
+cart-items .cart-item__details dl .product-option,
+cart-drawer .cart-item__details dl .product-option {
+  margin: 0;
+  font-size: 1.4rem;
+  line-height: 1.5;
+}
+
+#main-cart-footer .cart__blocks,
+cart-drawer .drawer__footer {
+  --color-foreground: 32, 35, 40;
+  --color-background: 245, 247, 246;
+  padding: 2rem;
+  border: 1px solid #dce2df;
+  border-radius: 0.8rem;
+  background: #f5f7f6;
+  color: #202328;
+}
+
+#main-cart-footer .totals,
+cart-drawer .totals {
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+#main-cart-footer .totals__total-value,
+cart-drawer .totals__total-value {
+  color: #202328;
+  font-size: 2.2rem;
+  font-weight: 600;
+}
+
+#main-cart-footer .cart__checkout-button,
+cart-drawer .cart__checkout-button,
+.hanfwolf-home .button,
+.banner .hanfwolf-discover-button {
+  border: 1px solid #117b3b;
+  border-radius: 0.6rem;
+  color: #ffffff;
+  background: #117b3b;
+}
+
+#main-cart-footer .cart__checkout-button::before,
+#main-cart-footer .cart__checkout-button::after,
+cart-drawer .cart__checkout-button::before,
+cart-drawer .cart__checkout-button::after,
+.hanfwolf-home .button::before,
+.hanfwolf-home .button::after,
+.banner .hanfwolf-discover-button::before,
+.banner .hanfwolf-discover-button::after {
+  content: none;
+}
+
+#main-cart-footer .cart__checkout-button:enabled:hover,
+cart-drawer .cart__checkout-button:enabled:hover,
+.hanfwolf-home .button:hover,
+.banner .hanfwolf-discover-button:hover {
+  background: #0e6932;
+}
+
+.hanfwolf-home {
+  padding-top: 4rem;
+  padding-bottom: 4rem;
+}
+
+.hanfwolf-home__collections,
+.hanfwolf-home__steps {
+  display: grid;
+  gap: 2rem;
+  padding: 0;
+}
+
+.hanfwolf-home__collections {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.hanfwolf-home__card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.2rem;
+  padding: 2rem;
+  border: 1px solid #dce2df;
+  border-radius: 0.8rem;
+}
+
+.hanfwolf-home__card img {
+  width: 100%;
+  height: 22rem;
+  object-fit: contain;
+}
+
+.hanfwolf-home__card h3 {
+  margin: 0;
+}
+
+.hanfwolf-home__card .button {
+  margin-top: auto;
+}
+
+.hanfwolf-home__steps {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  list-style: none;
+  counter-reset: rope-step;
+}
+
+.hanfwolf-home__steps li {
+  padding: 2rem;
+  border-top: 2px solid #158d45;
+  background: #f5f7f6;
+  color: #202328;
+  counter-increment: rope-step;
+}
+
+.hanfwolf-home__steps li::before {
+  content: counter(rope-step) ". ";
+  color: #117b3b;
+  font-weight: 600;
+}
+
+@media screen and (min-width: 990px) {
+  /* HW20261021: Keep a usable second form, but subordinate it to header search. */
+  .template-search .template-search__search {
+    max-width: 48rem;
+    margin-bottom: 1.6rem;
+  }
+
+  .template-search .template-search__search .search {
+    margin-top: 1.6rem;
+  }
+}
+
+@media screen and (max-width: 749px) {
+  .hanfwolf-home__collections,
+  .hanfwolf-home__steps {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .hanfwolf-home__card {
+    padding: 1.6rem;
+  }
+
+  .hanfwolf-product-card .card__heading {
+    font-size: 1.5rem;
+  }
+}

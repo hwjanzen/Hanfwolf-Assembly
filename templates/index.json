@@ -1,0 +1,73 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * HW20261021: Added discovery button and HaWo/DIEPA collection section;
+ * existing banner image, heading and settings preserved.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "image_banner": {
+      "type": "image-banner",
+      "blocks": {
+        "heading": {
+          "type": "heading",
+          "settings": {
+            "heading": "Ihre Plattform für individuelle Seilzuschnitte",
+            "heading_size": "h0"
+          }
+        },
+        "hanfwolf_discover": {
+          "type": "buttons",
+          "settings": {
+            "button_label_1": "Seile entdecken",
+            "button_link_1": "#hanfwolf-collections",
+            "button_style_secondary_1": false,
+            "button_label_2": "",
+            "button_style_secondary_2": false
+          }
+        }
+      },
+      "block_order": [
+        "heading",
+        "hanfwolf_discover"
+      ],
+      "settings": {
+        "image": "shopify://shop_images/Hanfwolf_Bielefeld_d4c3895a-8cc4-4e5c-ac4e-a26315a50388.jpg",
+        "image_overlay_opacity": 40,
+        "image_height": "small",
+        "image_behavior": "none",
+        "desktop_content_position": "middle-center",
+        "desktop_content_alignment": "center",
+        "show_text_box": false,
+        "color_scheme": "scheme-3",
+        "stack_images_on_mobile": false,
+        "mobile_content_alignment": "center",
+        "show_text_below": false
+      }
+    },
+    "hanfwolf_collections": {
+      "type": "hanfwolf-home-collections",
+      "blocks": {
+        "hawo": {
+          "type": "collection",
+          "settings": { "collection": "hawo-seile", "link_label": "HaWo-Seile entdecken" }
+        },
+        "diepa": {
+          "type": "collection",
+          "settings": { "collection": "diepa-seile", "link_label": "DIEPA-Seile entdecken" }
+        }
+      },
+      "block_order": ["hawo", "diepa"],
+      "settings": { "heading": "Unsere Seile" }
+    }
+  },
+  "order": [
+    "image_banner",
+    "hanfwolf_collections"
+  ]
+}

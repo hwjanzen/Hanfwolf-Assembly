@@ -48,8 +48,9 @@ Copy [component-collection-filters.css](assets/component-collection-filters.css)
 into the active theme's matching directories. Render
 `{% render 'collection-filter-enhancements' %}` once in the collection section
 after Dawn's filter CSS, replacing any separate inclusion of the custom CSS.
-The collection section is not included in this repository and must be wired in
-the active theme; deploying the app alone does not update these assets.
+The local [collection section](sections/main-collection-product-grid.liquid)
+includes this render; copy it or merge the integration into the active theme.
+Deploying the app alone does not update these assets.
 
 Desktop filter lists stay open on selection and close on outside clicks or
 Escape, including after AJAX markup replacement. Mobile drawer behavior remains
@@ -71,6 +72,103 @@ Only exact caption text is changed, also after AJAX updates; underlying filter
 parameters, product data and other storefront languages stay unchanged.
 The exact collection heading HaWo - Seile is displayed as HaWo – Seile.
 No manual product-count calculation or replacement filtering logic is added.
+Desktop filter buttons stretch to the tallest caption in their grid row,
+including the wrapped minimum breaking force label, without changing font sizes.
+
+### Configuration prices in product cards
+
+Copy [card-product.liquid](snippets/card-product.liquid) into the active theme,
+merging any theme-specific customizations. Cards for product type `Spezialseile`
+show `Preis nach Konfiguration` instead of a native price or volume-pricing note.
+Other product types and placeholder cards retain Dawn's price display, including
+zero prices for ordinary products. The shared [price snippet](snippets/price.liquid),
+product pages, cart, checkout and actual Shopify prices remain unchanged.
+
+### Collection images as product-card fallbacks
+
+Copy the updated [collection section](sections/main-collection-product-grid.liquid)
+and [product card](snippets/card-product.liquid) into the active theme.
+Set an image on each collection in Shopify Admin. The collection section passes
+its own `collection.image` as `fallback_image`, so each collection uses its own
+image for products without featured media. Real product media automatically takes
+precedence once maintained. Without either image, Dawn's text card remains.
+Other card callers (such as search or recommendations) are unchanged unless they
+explicitly pass a fallback image. No product data or images are copied in Shopify.
+
+### Storefront finishing pass (HW20261021)
+
+Upload [hanfwolf-storefront-polish.css](assets/hanfwolf-storefront-polish.css)
+and the updated [header](sections/header.liquid), which loads it once.
+Also update [header design](assets/hanfwolf-header-design.css),
+[header search](snippets/header-search.liquid), [product card](snippets/card-product.liquid),
+[search section](sections/main-search.liquid), [cart items](sections/main-cart-items.liquid)
+and [cart drawer](snippets/cart-drawer.liquid). Cards use square, uncropped image
+areas, three-line title space and restrained hover outlines. Cart checkout uses
+green, rounded actions; the existing footer/drawer summary receives a light panel.
+Only piece configuration options containing `Zuschnitt ` are hidden when a
+configuration ID and visible `Länge` property exist. Other options/properties,
+quantity controls, discounts, checkout and underlying line data are preserved.
+Header logo size and menu readability increase; German inline search receives a
+descriptive label. Search headings use the native term/count translation and the
+second form becomes smaller on desktop, remaining available on mobile.
+
+For the home page, upload [hanfwolf-home-collections.liquid](sections/hanfwolf-home-collections.liquid),
+[image-banner.liquid](sections/image-banner.liquid) and merge the updated
+[index template](templates/index.json) into the active home template. Preserve
+any newer theme-editor changes. The original banner image/settings are retained,
+with an added discovery button and HaWo/DIEPA collection blocks linked to
+`hawo-seile` and `diepa-seile`; these can be changed in the theme editor.
+JSON templates cannot preserve replaced code in Liquid comments; the existing
+banner remains intact and the changes are additive.
+
+### Search filters and fallback images
+
+Copy [main-search.liquid](sections/main-search.liquid) and
+[search-filter-design.css](assets/search-filter-design.css) into the active theme.
+Search now loads the shared collection-filter enhancement snippet once after
+its facets, followed by search-only overrides. Keep the existing shared filter
+assets/snippet and updated product card in the theme too. Native availability
+and price filters remain visible on search, as does native sorting; collection
+behavior stays unchanged. Search & Discovery supplies `search.filters`: CSS
+cannot create missing metafield filters. Verify those filters are configured
+in the app, populated on matching products and enabled in the search template.
+The grid adapts to the supplied number of filters. AJAX filtering stays native.
+
+For product results without featured media, search passes the first assigned
+collection with an image to the existing card fallback. If a product belongs to
+multiple pictured collections, the first in Shopify's collection order wins.
+Real product media takes precedence; articles/pages and products without either
+image keep their existing rendering. No product data is changed.
+
+### HANFWOLF theme header
+
+Copy [hanfwolf-header-design.css](assets/hanfwolf-header-design.css),
+[header.liquid](sections/header.liquid) and
+[header-search.liquid](snippets/header-search.liquid) into the active theme,
+merging existing customizations. The header's **HANFWOLF Header-Design** checkbox
+enables the `HW20261021` charcoal/green layout and can restore the original Dawn
+layout when disabled. Set the actual logo and menu in the existing theme settings;
+no menu links or logo images are hardcoded. Desktop uses a light logo surface,
+an inline native search, account/cart controls and a second navigation row.
+Existing predictive search, dropdown/mega menus, desktop drawer mode and mobile
+search/drawer remain managed by Dawn. Mobile retains the configured logo position.
+Only these theme files need uploading; no app deployment/reinstall is required.
+
+### Configurator charcoal/silver design
+
+Copy [rope-configurator-design.css](assets/rope-configurator-design.css) and the
+updated [seile section](sections/seile.liquid) into the active theme.
+The `HW20261021` stylesheet adds a scoped charcoal surface, silver primary
+actions, rounded secondary buttons, clear cut cards and a highlighted review.
+Logo green (`#158d45`, sampled from the supplied screenshot) accents card tops
+and the review border. A lighter green marks hover/focus, while the enabled
+cart action uses a darker green for readable white text. Intermediate primary
+actions retain their silver finish; disabled actions retain their muted style.
+It preserves the original section styles and all configuration/cart behavior.
+Hidden controls stay hidden, disabled fields remain readable, keyboard focus
+is visible and mobile actions use the available width. Review tables scroll
+inside their panel on narrow screens. Other Dawn sections remain unchanged.
+No backend deployment or app reinstall is needed.
 
 ### Configured variant names in the cart
 

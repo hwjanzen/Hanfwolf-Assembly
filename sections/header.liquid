@@ -124,6 +124,13 @@
   }
 {%- endstyle -%}
 
+{% comment %}HW20261021 Optional HANFWOLF header design; original Dawn layout remains available in the theme editor.{% endcomment %}
+{% comment %}HW20261021 Shared card, cart and home polish loaded once across storefront pages.{% endcomment %}
+{{ 'hanfwolf-storefront-polish.css' | asset_url | stylesheet_tag }}
+{%- if section.settings.hanfwolf_header_design -%}
+  {{ 'hanfwolf-header-design.css' | asset_url | stylesheet_tag }}
+{%- endif -%}
+
 <script src="{{ 'cart-notification.js' | asset_url }}" defer="defer"></script>
 
 {%- liquid
@@ -146,7 +153,8 @@
   {% if header_tag == 'sticky-header' %}
     data-sticky-type="{{ section.settings.sticky_header_type }}"
   {% endif %}
-  class="header-wrapper color-{{ section.settings.color_scheme }} gradient{% if section.settings.show_line_separator %} header-wrapper--border-bottom{% endif %}"
+  {% comment %}HW20261021 class="header-wrapper color-{{ section.settings.color_scheme }} gradient{% if section.settings.show_line_separator %} header-wrapper--border-bottom{% endif %}" {% endcomment %}
+  class="header-wrapper color-{{ section.settings.color_scheme }} gradient{% if section.settings.show_line_separator %} header-wrapper--border-bottom{% endif %}{% if section.settings.hanfwolf_header_design %} hanfwolf-header{% endif %}"
 >
   {%- liquid
     assign social_links = false
@@ -165,6 +173,11 @@
     endif
   -%}
   <header class="header header--{{ section.settings.logo_position }} header--mobile-{{ section.settings.mobile_logo_position }} page-width{% if section.settings.menu_type_desktop == 'drawer' %} drawer-menu{% endif %}{% if section.settings.menu != blank %} header--has-menu{% endif %}{% if has_app_block %} header--has-app{% endif %}{% if social_links %} header--has-social{% endif %}{% if shop.customer_accounts_enabled %} header--has-account{% endif %}{% if country_selector or language_selector %} header--has-localizations{% endif %}">
+    {% comment %}HW20261021 Desktop search reuses Dawn's existing form and predictive-search components.{% endcomment %}
+    {%- if section.settings.hanfwolf_header_design -%}
+      {%- assign inline_search_id = 'Search-Inline-' | append: section.id -%}
+      {% render 'header-search', input_id: inline_search_id, inline_search: true %}
+    {%- endif -%}
     {%- liquid
       assign render_search_left = false
       if section.settings.logo_position == 'top-center' or section.settings.menu == blank or shop.customer_accounts_enabled
@@ -506,6 +519,13 @@
   "class": "section-header",
   "max_blocks": 3,
   "settings": [
+    {
+      "type": "checkbox",
+      "id": "hanfwolf_header_design",
+      "label": "HANFWOLF Header-Design",
+      "info": "HW20261021: Dunkler Header mit Logo links, breiter Desktop-Suche und separater Menuezeile.",
+      "default": true
+    },
     {
       "type": "select",
       "id": "logo_position",

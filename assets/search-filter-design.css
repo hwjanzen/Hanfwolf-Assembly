@@ -1,0 +1,20 @@
+/* HW20261021: Search retains native variant filters instead of hiding every
+   available control when Search & Discovery returns only price/availability.
+   Original shared rule: details[id^='Details-filter.v'] { display: none; } */
+#main-search-filters details[id^='Details-filter.v'],
+#main-search-filters details[id^='Details-Mobile-filter.v'] {
+  display: block;
+}
+
+/* HW20261021 Original shared rule: .facet-filters.sorting { display: none; } */
+#main-search-filters .facet-filters.sorting {
+  display: flex;
+}
+
+@media screen and (min-width: 750px) {
+  /* HW20261021 Original design uses five columns from 990px. Search may
+     return a different number of filters, so fill only the available columns. */
+  #main-search-filters .facets__wrapper {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+  }
+}

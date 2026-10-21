@@ -1,0 +1,242 @@
+/* HW20261021: Scoped charcoal/silver design; original section styles remain intact. */
+[data-rope-configurator-section] {
+  --rope-surface: #202328;
+  --rope-border: #555d67;
+  --rope-text: #f1f3f5;
+  --rope-muted: #bbc2cb;
+  /* HW20261021: Brand green sampled from the supplied HANFWOLF logo. */
+  --rope-brand: #158d45;
+  --rope-brand-light: #6bd994;
+  --rope-brand-action: #117b3b;
+  color: var(--rope-text);
+  background: #15171b;
+  color-scheme: dark;
+}
+
+[data-rope-configurator-section] .page-width {
+  max-width: 120rem;
+}
+
+[data-rope-configurator-section] h2,
+[data-rope-configurator-section] h3 {
+  color: var(--rope-text);
+  letter-spacing: 0;
+}
+
+[data-rope-configurator-section] h2 {
+  margin: 0 0 1.2rem;
+}
+
+[data-rope-configurator-section] p {
+  color: var(--rope-muted);
+  line-height: 1.6;
+}
+
+[data-rope-configurator-section] form {
+  margin-top: 2.8rem;
+}
+
+[data-rope-configurator-section] .rope-cut {
+  margin: 0;
+  padding: 2rem;
+  border: 1px solid var(--rope-border);
+  border-radius: 1.2rem;
+  background: linear-gradient(135deg, #282c32, var(--rope-surface) 65%);
+  /* HW20261021: Green accent keeps the charcoal/silver card surface. */
+  border-top: 2px solid var(--rope-brand);
+}
+
+[data-rope-configurator-section] .rope-cut > legend {
+  padding: 0 0.8rem;
+  color: var(--rope-text);
+  font-size: 1.8rem;
+  font-weight: 600;
+}
+
+[data-rope-configurator-section] .rope-cut__inputs {
+  margin: 0;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+  gap: 2rem;
+}
+
+[data-rope-configurator-section] .rope-cut__field label {
+  display: grid;
+  gap: 0.8rem;
+  color: var(--rope-text);
+  font-size: 1.5rem;
+  font-weight: 500;
+}
+
+[data-rope-configurator-section] input,
+[data-rope-configurator-section] select {
+  min-width: 0;
+  min-height: 4.8rem;
+  border: 1px solid #717b88;
+  border-radius: 0.6rem;
+  color: var(--rope-text);
+  background: #171a1f;
+  font-size: 1.6rem;
+  transition: border-color 150ms ease, background-color 150ms ease;
+}
+
+[data-rope-configurator-section] input:enabled:hover,
+[data-rope-configurator-section] select:enabled:hover {
+  /* HW20261021 Original: border-color: #c1c8d1; */
+  border-color: var(--rope-brand-light);
+}
+
+[data-rope-configurator-section] input:disabled,
+[data-rope-configurator-section] select:disabled {
+  color: var(--rope-muted);
+  background: #272b31;
+  opacity: 1;
+  cursor: not-allowed;
+}
+
+[data-rope-configurator-section] button {
+  box-sizing: border-box;
+  min-height: 4.4rem;
+  padding: 1rem 1.6rem;
+  border: 1px solid #7c8795;
+  border-radius: 0.6rem;
+  color: var(--rope-text);
+  background: #2c3139;
+  font: inherit;
+  font-size: 1.4rem;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  box-shadow: none;
+  transition: border-color 150ms ease, background-color 150ms ease;
+}
+
+/* HW20261021: Dawn draws button borders with pseudo-elements. */
+[data-rope-configurator-section] .button::before,
+[data-rope-configurator-section] .button::after {
+  content: none;
+}
+
+[data-rope-configurator-section] button:enabled:hover {
+  /* HW20261021 Original: border-color: #d1d7df; */
+  border-color: var(--rope-brand-light);
+  background: #3a424d;
+}
+
+[data-rope-configurator-section] [data-rope-finish],
+[data-rope-configurator-section] [data-rope-confirm],
+[data-rope-configurator-section] [data-rope-submit] {
+  border-color: #d4dbe3;
+  color: #181c21;
+  background: linear-gradient(135deg, #f0f2f5, #bbc4cf);
+  font-weight: 600;
+}
+
+[data-rope-configurator-section] [data-rope-finish]:enabled:hover,
+[data-rope-configurator-section] [data-rope-confirm]:enabled:hover,
+[data-rope-configurator-section] [data-rope-submit]:enabled:hover {
+  color: #181c21;
+  background: #f0f2f5;
+}
+
+/* HW20261021: Final action uses a darker brand shade for white-text contrast.
+   Original enabled submit colors: border #d4dbe3; text #181c21;
+   background linear-gradient(135deg, #f0f2f5, #bbc4cf); hover #f0f2f5. */
+[data-rope-configurator-section] [data-rope-submit]:enabled {
+  border-color: var(--rope-brand);
+  color: #ffffff;
+  background: var(--rope-brand-action);
+}
+
+[data-rope-configurator-section] [data-rope-submit]:enabled:hover {
+  border-color: var(--rope-brand-light);
+  color: #ffffff;
+  background: #0e6932;
+}
+
+[data-rope-configurator-section] button:disabled {
+  border-color: #555d67;
+  color: #a7afb9;
+  background: #262b32;
+  opacity: 1;
+  cursor: not-allowed;
+}
+
+[data-rope-configurator-section] :is(input, select, button):focus-visible {
+  /* HW20261021 Original: outline: 2px solid #e1e7ef; */
+  outline: 2px solid var(--rope-brand-light);
+  outline-offset: 3px;
+  box-shadow: none;
+}
+
+[data-rope-configurator-section] .rope-configurator__actions {
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+[data-rope-configurator-section] .rope-configurator__summary {
+  padding: 2rem;
+  /* HW20261021 Original: border: 1px solid #8995a5; */
+  border: 1px solid var(--rope-brand);
+  border-radius: 1.2rem;
+  background: var(--rope-surface);
+}
+
+[data-rope-configurator-section] .rope-configurator__summary h3 {
+  margin-top: 0;
+}
+
+[data-rope-configurator-section] th,
+[data-rope-configurator-section] td {
+  padding: 1.2rem;
+  border-bottom: 1px solid var(--rope-border);
+  color: var(--rope-text);
+  font-size: 1.4rem;
+}
+
+[data-rope-configurator-section] th {
+  color: var(--rope-muted);
+  font-weight: 500;
+}
+
+[data-rope-configurator-section] td button {
+  margin: 0 0.6rem 0.6rem 0;
+}
+
+[data-rope-configurator-section] [data-rope-total] {
+  color: var(--rope-text);
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+[data-rope-configurator-section] .rope-configurator__error {
+  padding: 1.2rem 1.6rem;
+  border: 1px solid #b97575;
+  border-radius: 0.6rem;
+  color: #ffcbcb;
+  background: #3a2228;
+}
+
+/* HW20261021: Theme display rules must not expose gated or inactive controls. */
+[data-rope-configurator-section] [hidden] {
+  display: none !important;
+}
+
+@media screen and (max-width: 749px) {
+  [data-rope-configurator-section] .rope-cut,
+  [data-rope-configurator-section] .rope-configurator__summary {
+    padding: 1.4rem;
+  }
+
+  [data-rope-configurator-section] .rope-configurator__actions > button,
+  [data-rope-configurator-section] [data-rope-submit] {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-rope-configurator-section] input,
+  [data-rope-configurator-section] select,
+  [data-rope-configurator-section] button {
+    transition: none;
+  }
+}

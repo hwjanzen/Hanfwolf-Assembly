@@ -193,6 +193,10 @@
                             <dl>
                               {%- if item.product.has_only_default_variant == false -%}
                                 {%- for option in item.options_with_values -%}
+                                  {% comment %}HW20261021 Hide only the redundant technical option for a piece configuration with a displayed length; original option markup stays below.{% endcomment %}
+                                  {%- if item.properties._hanfwolf_configuration_id != blank and item.properties._hanfwolf_quantity_unit == 'piece' and item.properties['Länge'] != blank and option.value contains 'Zuschnitt ' -%}
+                                    {%- continue -%}
+                                  {%- endif -%}
                                   <div class="product-option">
                                     <dt>{{ option.name }}:</dt>
                                     <dd>

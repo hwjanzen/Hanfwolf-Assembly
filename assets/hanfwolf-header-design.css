@@ -1,0 +1,186 @@
+/* HW20261021: Optional HANFWOLF layout; native Dawn menus/search remain in control. */
+.hanfwolf-header {
+  --color-background: 21, 23, 27;
+  --color-foreground: 241, 243, 245;
+  --color-link: 241, 243, 245;
+  --color-shadow: 0, 0, 0;
+  --header-brand: #158d45;
+  --header-accent: #6bd994;
+  background: #15171b;
+  color: #f1f3f5;
+  border-bottom: 2px solid var(--header-brand);
+}
+
+.hanfwolf-header .header {
+  row-gap: 1.6rem;
+}
+
+.hanfwolf-header .header__heading-link {
+  padding: 0.8rem 1.2rem;
+  border-radius: 0.6rem;
+  background: #ffffff;
+}
+
+.hanfwolf-header .header__heading-link .h2 {
+  color: #158d45;
+}
+
+.hanfwolf-header .header__heading-logo {
+  object-fit: contain;
+}
+
+.hanfwolf-header .header__icon,
+.hanfwolf-header .header__menu-item,
+.hanfwolf-header .localization-form__select {
+  color: #f1f3f5;
+}
+
+.hanfwolf-header .header__icon:hover,
+.hanfwolf-header .header__menu-item:hover,
+.hanfwolf-header .mega-menu__link:hover {
+  color: var(--header-accent);
+}
+
+.hanfwolf-header .header__active-menu-item,
+.hanfwolf-header .list-menu__item--active,
+.hanfwolf-header .mega-menu__link--active {
+  color: var(--header-accent);
+  text-decoration-color: var(--header-accent);
+  text-underline-offset: 0.6rem;
+}
+
+.hanfwolf-header .header__submenu,
+.hanfwolf-header .mega-menu__content,
+.hanfwolf-header .menu-drawer,
+.hanfwolf-header .menu-drawer__submenu,
+.hanfwolf-header .search-modal,
+.hanfwolf-header .predictive-search {
+  --color-background: 32, 35, 40;
+  --color-foreground: 241, 243, 245;
+  --color-link: 241, 243, 245;
+  color: #f1f3f5;
+  background: #202328;
+}
+
+.hanfwolf-header .cart-count-bubble {
+  color: #ffffff;
+  background: #117b3b;
+}
+
+.hanfwolf-header :is(a, button, input, summary):focus-visible {
+  outline: 2px solid var(--header-accent);
+  outline-offset: 3px;
+}
+
+.hanfwolf-header-search {
+  display: none;
+  min-width: 0;
+}
+
+.hanfwolf-header-search :is(predictive-search, search-form) {
+  display: block;
+  position: relative;
+  width: 100%;
+}
+
+.hanfwolf-header-search .search-modal__form {
+  max-width: none;
+}
+
+.hanfwolf-header-search .field::before,
+.hanfwolf-header-search .field::after {
+  content: none;
+}
+
+.hanfwolf-header-search .search__input {
+  min-height: 4.8rem;
+  border: 1px solid #a5adb8;
+  border-radius: 0.8rem;
+  color: #f1f3f5;
+  background: #282c32;
+}
+
+.hanfwolf-header-search .field__label,
+.hanfwolf-header-search .field__button {
+  color: #f1f3f5;
+}
+
+.hanfwolf-header-search .predictive-search {
+  border: 1px solid #717b88;
+  border-radius: 0.6rem;
+}
+
+@media screen and (min-width: 990px) {
+  .hanfwolf-header .header {
+    grid-template-areas:
+      'heading search icons'
+      'navigation navigation navigation';
+    grid-template-columns: minmax(0, auto) minmax(20rem, 1fr) auto;
+    column-gap: 3rem;
+    padding-top: 2rem;
+    padding-bottom: 0;
+  }
+
+  .hanfwolf-header .header__heading,
+  .hanfwolf-header .header__heading-link {
+    justify-self: start;
+    text-align: left;
+  }
+
+  .hanfwolf-header .header__heading-logo-wrapper {
+    /* HW20261021 Original: max-width: 24rem; merchant logo width otherwise unchanged. */
+    width: clamp(15rem, 16vw, 22rem);
+    max-width: 24rem;
+  }
+
+  .hanfwolf-header-search {
+    display: block;
+    grid-area: search;
+    width: 100%;
+    max-width: 76rem;
+    justify-self: center;
+  }
+
+  .hanfwolf-header .header > .header__search,
+  .hanfwolf-header .header .header__icons > .header__search {
+    display: none;
+  }
+
+  .hanfwolf-header .header .header__inline-menu {
+    grid-area: navigation;
+    justify-self: stretch;
+    margin: 0;
+    border-top: 1px solid #3c424b;
+  }
+
+  .hanfwolf-header .header__inline-menu > .list-menu--inline {
+    justify-content: flex-start;
+    gap: 0.8rem;
+  }
+
+  .hanfwolf-header .header__inline-menu > ul > li > header-menu > details > summary,
+  .hanfwolf-header .header__inline-menu > ul > li > a {
+    min-height: 5rem;
+    /* HW20261021 Original: font-size: 1.5rem; */
+    font-size: 1.6rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+  }
+
+  /* HW20261021: Desktop drawer configuration remains usable below the logo row. */
+  .hanfwolf-header .header header-drawer {
+    grid-area: navigation;
+    justify-self: start;
+    margin-left: 0;
+  }
+}
+
+@media screen and (max-width: 989px) {
+  .hanfwolf-header .header__heading-link {
+    padding: 0.6rem 0.8rem;
+  }
+
+  .hanfwolf-header .header__heading-logo-wrapper {
+    max-width: min(18rem, 32vw);
+  }
+}

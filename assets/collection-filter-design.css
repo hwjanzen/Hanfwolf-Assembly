@@ -82,9 +82,19 @@ facet-filters-form .active-facets__button-inner {
   facet-filters-form .facets__wrapper {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    /* HW20261021: Keep wrapped tablet rows at the same button height too. */
+    grid-auto-rows: 1fr;
     gap: 1rem;
+    /* HW20261021 Original base rule: align-items: flex-start; */
+    align-items: stretch;
     width: 100%;
     margin-bottom: 1rem;
+  }
+
+  /* HW20261021: Fill the shared row height, including wrapped captions. */
+  .facets-container .facets__summary,
+  facet-filters-form .facets__summary {
+    height: 100%;
   }
 
   .facets-container .facets__display,
