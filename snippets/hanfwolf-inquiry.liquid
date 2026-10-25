@@ -1,0 +1,47 @@
+{% comment %}HW20261025 Native contact delivery, separate from checkout and pricing.{% endcomment %}
+{{ 'hanfwolf-inquiry.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'hanfwolf-inquiry.js' | asset_url }}" defer></script>
+{%- assign inquiry_id = 'HanfwolfInquiry-' | append: section.id -%}
+{%- assign inquiry_form_id = inquiry_id | append: '-form' -%}
+<div data-hw-inquiry-root data-inquiry-product="{{ product.title | escape }}" data-inquiry-assortment="{{ assortment_title | escape }}">
+  <dialog class="hw-inquiry" id="{{ inquiry_id }}" aria-labelledby="{{ inquiry_id }}-title">
+    <button type="button" class="hw-inquiry__close" data-inquiry-close aria-label="Anfrage schließen">&times;</button>
+    <h2 id="{{ inquiry_id }}-title">Individuelle Anfrage</h2>
+    <p>Beschreiben Sie Ihren Bedarf. Wir prüfen die Möglichkeiten und erstellen Ihnen ein individuelles Angebot. Dies ist keine Bestellung.</p>
+    {% form 'contact', id: inquiry_form_id, class: 'hw-inquiry__form', return_to: 'back' %}
+      {% if form.posted_successfully? %}
+        <p role="status" tabindex="-1" data-inquiry-result>Vielen Dank für Ihre Anfrage. Wir prüfen Ihre gewünschte Ausführung und melden uns bei Ihnen.</p>
+      {% else %}
+        {% if form.errors %}
+          <div role="alert" tabindex="-1" data-inquiry-result>{{ form.errors | default_errors }}</div>
+        {% endif %}
+        <label for="{{ inquiry_id }}-context">Ihre Anfrage bezieht sich auf</label>
+        <textarea id="{{ inquiry_id }}-context" name="contact[Kontext]" rows="5" readonly data-inquiry-context></textarea>
+        <label for="{{ inquiry_id }}-body">Was benötigen Sie oder was soll abweichend ausgeführt werden? *</label>
+        <textarea id="{{ inquiry_id }}-body" name="contact[body]" rows="5" maxlength="5000" required>{{ form.body | escape }}</textarea>
+        <div class="hw-inquiry__fields">
+          <div>
+            <label for="{{ inquiry_id }}-name">Name *</label>
+            <input id="{{ inquiry_id }}-name" name="contact[name]" autocomplete="name" maxlength="200" value="{{ form.name | default: customer.name | escape }}" required>
+          </div>
+          <div>
+            <label for="{{ inquiry_id }}-email">E-Mail *</label>
+            <input id="{{ inquiry_id }}-email" name="contact[email]" type="email" autocomplete="email" value="{{ form.email | default: customer.email | escape }}" required>
+          </div>
+          <div>
+            <label for="{{ inquiry_id }}-company">Firma</label>
+            <input id="{{ inquiry_id }}-company" name="contact[Firma]" autocomplete="organization" maxlength="200">
+          </div>
+          <div>
+            <label for="{{ inquiry_id }}-phone">Telefon</label>
+            <input id="{{ inquiry_id }}-phone" name="contact[phone]" type="tel" autocomplete="tel" value="{{ form.phone | escape }}">
+          </div>
+        </div>
+        <p>Ihre Angaben werden zur Bearbeitung Ihrer Anfrage verwendet.
+          {%- if shop.privacy_policy.url != blank %} <a href="{{ shop.privacy_policy.url }}">Datenschutzerklärung</a>{% endif -%}
+        </p>
+        <button type="submit" class="hw-inquiry__submit">Unverbindlich anfragen</button>
+      {% endif %}
+    {% endform %}
+  </dialog>
+</div>

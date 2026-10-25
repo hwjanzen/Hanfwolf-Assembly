@@ -43,6 +43,28 @@ facet-filters-form .facets__summary {
   font-weight: 600;
 }
 
+/* HW20261025: Double filter captions; keep values and sort controls unchanged.
+   Original desktop 1.05rem, mobile 1.08rem. */
+.facets-container .facets__summary,
+facet-filters-form .facets__summary {
+  font-size: 2.1rem;
+}
+
+.facets-container .facets__summary > div,
+facet-filters-form .facets__summary > div {
+  min-width: 0;
+}
+
+.facets-container .facets__summary-label,
+facet-filters-form .facets__summary-label {
+  overflow-wrap: anywhere;
+}
+
+.facets-container summary.mobile-facets__summary {
+  font-size: 2.16rem;
+  line-height: 1.2;
+}
+
 .facets-container .facets__summary .icon-caret,
 facet-filters-form .facets__summary .icon-caret {
   right: 1rem;

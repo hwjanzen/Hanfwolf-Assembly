@@ -69,6 +69,20 @@
   data-rope-configurator-section
 >
   <div class="page-width">
+    {%- capture hw_product_collection -%}{% render 'hanfwolf-product-collection', product: product, collection: collection %}{%- endcapture -%}
+    {%- if hw_product_collection != blank -%}
+      {%- assign hw_assortment = collections[hw_product_collection] -%}
+      <nav class="rope-configurator__breadcrumb" aria-label="Brotkrumennavigation">
+        <ol>
+          <li class="rope-configurator__breadcrumb-desktop"><a href="{{ routes.root_url }}">Startseite</a></li>
+          <li>
+            <span class="rope-configurator__breadcrumb-mobile" aria-hidden="true">&larr; </span>
+            <a href="{{ hw_assortment.url }}">{{ hw_assortment.title | escape }}</a>
+          </li>
+          <li class="rope-configurator__breadcrumb-desktop" aria-current="page">{{ product.title | escape }}</li>
+        </ol>
+      </nav>
+    {%- endif -%}
     <h2 class="h1">{{ section.settings.heading | escape }}</h2>
     {% comment %}HW20261025 Produktbezug direkt im Konfigurator anzeigen, nicht nur im Browser-Tab.{% endcomment %}
     {%- if product != blank -%}
@@ -142,6 +156,10 @@
           <legend>Konfiguration</legend>
         </fieldset>
       </fieldset>
+      <div class="hw-inquiry-cut">
+        <p>Andere Endverbindung oder Sonderausführung gewünscht?</p>
+        <button type="button" class="hw-inquiry-trigger" data-inquiry-open="HanfwolfInquiry-{{ section.id }}">Individuelle Ausführung anfragen</button>
+      </div>
       {% comment %}HW20261025 Schematische Vorschau aus Ende 1, Material, Ende 2 und optionaler Aufmachung; keine massstabsgetreue Darstellung.{% endcomment %}
       <div data-rope-preview hidden>
       <figure class="rope-cut__preview">
@@ -173,6 +191,7 @@
       <p role="status" aria-live="polite" data-rope-cut-status></p>
     </fieldset>
   </template>
+  {% render 'hanfwolf-inquiry', section: section, product: product, assortment_title: hw_assortment.title %}
 </section>
 
 <script

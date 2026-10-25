@@ -27,6 +27,48 @@
   margin: 0 0 1.2rem;
 }
 
+/* HW20261025: Keep assortment context on product pages, including direct visits. */
+[data-rope-configurator-section] .rope-configurator__breadcrumb {
+  margin-bottom: 1.6rem;
+  font-size: 1.4rem;
+  color: var(--rope-muted);
+}
+
+[data-rope-configurator-section] .rope-configurator__breadcrumb ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-wrap: anywhere;
+}
+
+[data-rope-configurator-section] .rope-configurator__breadcrumb li + li::before {
+  content: "\203a";
+  margin-right: 0.6rem;
+}
+
+[data-rope-configurator-section] .rope-configurator__breadcrumb a {
+  color: var(--rope-brand-light);
+  text-underline-offset: 0.3rem;
+}
+
+[data-rope-configurator-section] .rope-configurator__breadcrumb-mobile {
+  display: none;
+}
+
+@media screen and (max-width: 749px) {
+  [data-rope-configurator-section] .rope-configurator__breadcrumb-desktop,
+  [data-rope-configurator-section] .rope-configurator__breadcrumb li + li::before {
+    display: none;
+  }
+
+  [data-rope-configurator-section] .rope-configurator__breadcrumb-mobile {
+    display: inline;
+  }
+}
+
 /* HW20261025: Keep the configured product identifiable, including long rope names. */
 [data-rope-configurator-section] .rope-configurator__product-title {
   margin: 0 0 1.6rem;

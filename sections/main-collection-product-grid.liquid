@@ -200,6 +200,18 @@
         </div>
       </div>
     {%- endpaginate -%}
+    {% comment %}HW20261025 Outside AJAX grid replacement: remains available with zero matches.{% endcomment %}
+    {%- if collection.handle == 'hawo-seile' or collection.handle == 'diepa-seile' -%}
+      <div class="page-width">
+        <div class="hw-inquiry-callout">
+          <h2>Ihr gewünschtes Seil ist nicht dabei?</h2>
+          <p>Beschreiben Sie uns Ihren Bedarf. Wir prüfen die Möglichkeiten und erstellen Ihnen ein individuelles Angebot.</p>
+          <button type="button" class="hw-inquiry-trigger" data-inquiry-open="HanfwolfInquiry-{{ section.id }}">Seil anfragen</button>
+          <noscript>Bitte aktivieren Sie JavaScript, um das Anfrageformular zu öffnen.</noscript>
+        </div>
+      </div>
+      {% render 'hanfwolf-inquiry', section: section, assortment_title: collection.title %}
+    {%- endif -%}
     {% if section.settings.image_shape == 'arch' %}
       {{ 'mask-arch.svg' | inline_asset_content }}
     {%- endif -%}

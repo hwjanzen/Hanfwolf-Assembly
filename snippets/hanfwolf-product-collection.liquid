@@ -1,0 +1,17 @@
+{%- comment -%}HW20261025 Resolve rope assortment consistently for navigation and breadcrumbs.{%- endcomment -%}
+{%- liquid
+  assign assortment_handle = ''
+  if product != blank
+    for product_collection in product.collections
+      if product_collection.handle == 'hawo-seile' or product_collection.handle == 'diepa-seile'
+        if collection.handle == product_collection.handle
+          assign assortment_handle = product_collection.handle
+          break
+        elsif assortment_handle == '' or product_collection.handle == 'hawo-seile'
+          assign assortment_handle = product_collection.handle
+        endif
+      endif
+    endfor
+  endif
+  echo assortment_handle
+-%}

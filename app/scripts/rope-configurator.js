@@ -462,6 +462,7 @@
         "-" +
         position.code;
       select.required = position.required;
+      select.dataset.positionCode = position.code;
       label.htmlFor = select.id;
       label.textContent = position.label;
       var empty = document.createElement("option");
@@ -574,7 +575,49 @@
           "/config?productId=" +
           encodeURIComponent(script.dataset.productId),
       );
-      addCut();
+      // HW20261025: A native inquiry submission reloads the page; restore inputs as drafts.
+      var drafts = null;
+      try {
+        var draftKey = "hw-inquiry-drafts:" + window.location.pathname;
+        var storedDrafts = sessionStorage.getItem(draftKey);
+        if (storedDrafts) {
+          drafts = JSON.parse(storedDrafts);
+          sessionStorage.removeItem(draftKey);
+          if (
+            !Array.isArray(drafts) || !drafts.length ||
+            !drafts.every(function (draft) {
+              return draft && typeof draft.quantity === "string" &&
+                typeof draft.length === "string" && Array.isArray(draft.selections) &&
+                draft.selections.every(function (selection) {
+                  return selection && typeof selection.code === "string" &&
+                    typeof selection.value === "string";
+                });
+            })
+          ) {
+            throw new Error("Ungueltige gespeicherte Zuschnitte.");
+          }
+        }
+      } catch (error) {
+        drafts = null;
+        console.warn("Zuschnitte konnten nach der Anfrage nicht wiederhergestellt werden.", error);
+        if (storedDrafts) {
+          showError("Die gespeicherten Zuschnitte konnten nicht wiederhergestellt werden. Bitte erneut eingeben.");
+        }
+      }
+      (drafts || [null]).forEach(function (draft) {
+        addCut();
+        if (!draft) return;
+        var cut = cuts[cuts.length - 1];
+        cut.inputs.querySelector("[data-rope-quantity]").value = draft.quantity;
+        cut.inputs.querySelector("[data-rope-length]").value = draft.length;
+        cut.selects.forEach(function (select) {
+          var selection = draft.selections.find(function (entry) {
+            return entry.code === select.dataset.positionCode;
+          });
+          if (selection) select.value = selection.value;
+        });
+        updatePreview(cut.element, cut.selects);
+      });
     } catch (error) {
       overallStatus.textContent = "";
       showError(

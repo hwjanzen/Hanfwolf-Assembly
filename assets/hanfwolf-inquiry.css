@@ -1,0 +1,78 @@
+/* HW20261025: Shared collection/configurator inquiry, independent of cart. */
+.hw-inquiry-callout {
+  margin: 2.4rem 0;
+  padding: 2rem;
+  border: 1px solid #b1c6a8;
+  border-left: 3px solid #158d45;
+  border-radius: 0.8rem;
+  background: #f7faf5;
+  color: #20341d;
+}
+.hw-inquiry-callout h2,
+.hw-inquiry-callout p { margin: 0 0 1rem; }
+.hw-inquiry-trigger,
+.hw-inquiry .hw-inquiry__submit {
+  padding: 1.2rem 1.8rem;
+  min-height: 4.4rem;
+  border: 1px solid #117b3b;
+  border-radius: 0.6rem;
+  color: #fff;
+  background: #117b3b;
+  font: inherit;
+  cursor: pointer;
+}
+[data-rope-configurator-section] .hw-inquiry-cut { margin: 1.6rem 0 2.4rem; }
+[data-rope-configurator-section] .hw-inquiry-trigger { color: #f1f3f5; background: #2c3139; }
+.hw-inquiry {
+  box-sizing: border-box;
+  width: min(68rem, calc(100% - 3.2rem));
+  max-height: calc(100dvh - 3.2rem);
+  padding: 3rem;
+  border: 1px solid #555d67;
+  border-top: 3px solid #158d45;
+  border-radius: 1.2rem;
+  color: #f1f3f5;
+  background: #202328;
+  color-scheme: dark;
+  font-size: 1.5rem;
+  overflow-y: auto;
+}
+.hw-inquiry::backdrop { background: rgb(0 0 0 / 65%); }
+.hw-inquiry h2 { margin: 0 3rem 1.6rem 0; color: #f1f3f5; }
+.hw-inquiry p { color: #bbc2cb; line-height: 1.5; }
+.hw-inquiry a { color: #6bd994; }
+.hw-inquiry__form { display: grid; gap: 1rem; }
+.hw-inquiry__fields { display: grid; grid-template-columns: 1fr 1fr; gap: 1.6rem; }
+.hw-inquiry__fields > div { display: grid; gap: 0.6rem; }
+.hw-inquiry input,
+.hw-inquiry textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  padding: 1rem;
+  border: 1px solid #717b88;
+  border-radius: 0.6rem;
+  color: #f1f3f5;
+  background: #171a1f;
+  font: inherit;
+}
+.hw-inquiry textarea { resize: vertical; }
+.hw-inquiry [readonly] { color: #bbc2cb; }
+.hw-inquiry__close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 4rem;
+  height: 4rem;
+  border: 0;
+  color: #f1f3f5;
+  background: transparent;
+  font-size: 2.8rem;
+  cursor: pointer;
+}
+.hw-inquiry :focus-visible,
+.hw-inquiry-trigger:focus-visible { outline: 2px solid #6bd994; outline-offset: 3px; }
+@media (max-width: 749px) {
+  .hw-inquiry { padding: 2rem; }
+  .hw-inquiry__fields { grid-template-columns: 1fr; }
+}

@@ -137,6 +137,12 @@ banner remains intact and the changes are additive.
 
 ### Search filters and fallback images
 
+The `HW20261025` caption sizing update in `collection-filter-design.css` doubles
+desktop filter headings from 1.05rem to 2.1rem and mobile headings from 1.08rem
+to 2.16rem. Labels wrap within their existing equal-height grid; filter values,
+counts and sorting controls retain their sizes. The shared stylesheet also
+applies to search filters. Upload only this stylesheet for the sizing update.
+
 Copy [main-search.liquid](sections/main-search.liquid) and
 [search-filter-design.css](assets/search-filter-design.css) into the active theme.
 Search now loads the shared collection-filter enhancement snippet once after
@@ -154,7 +160,47 @@ multiple pictured collections, the first in Shopify's collection order wins.
 Real product media takes precedence; articles/pages and products without either
 image keep their existing rendering. No product data is changed.
 
+### Individual rope inquiries
+
+The `HW20261025` inquiry dialog uses Shopify's native contact form, not a cart
+line or an unpriced order. HaWo/DIEPA collection grids offer a persistent callout
+below results, including zero matches after native AJAX filtering. Each cut
+offers its own inquiry button below the configuration fields. The dialog
+collects name/email (required), optional company/phone and free text, alongside
+read-only assortment, page URL, selected filters or the clicked cut's current
+quantity/length/components. Names and product labels are escaped.
+
+Upload `hanfwolf-inquiry.liquid` into snippets, `hanfwolf-inquiry.css` and
+`hanfwolf-inquiry.js` into assets, and merge the updated
+`main-collection-product-grid.liquid` and `seile.liquid` sections into the theme.
+Deploy the updated app-served configurator script too: native contact submission
+reloads the page, so it restores all cut inputs as unconfirmed drafts from
+tab-scoped session storage. Finish/review/confirm again before checkout. Closing
+the dialog without submission leaves the current configuration untouched.
+No personal contact details are stored by our scripts. Storage failures are
+logged; restoring after a reload requires browser session storage.
+
+Shopify handles contact validation, spam challenges and delivery to the store's
+configured contact recipient. Success is shown only when Liquid reports
+`form.posted_successfully?`; validation errors reopen the dialog. Verify the
+recipient and send a real inquiry from both entry points before publishing.
+The local checks do not establish email delivery. No database migration, new
+permissions or app reinstall is required.
+
 ### HANFWOLF theme header
+
+The `HW20261025` product assortment update keeps HaWo/DIEPA collection menu
+items highlighted on their products (dropdown, mega menu and drawer). The
+configurator adds a linked breadcrumb; mobile shows only the return link.
+Upload the shared [assortment resolver](snippets/hanfwolf-product-collection.liquid),
+all three `header-*-menu`/`header-drawer` snippets, `hanfwolf-header-design.css`,
+`seile.liquid` and `rope-configurator-design.css`. Collection menu entries must
+be Shopify collection links to `hawo-seile` or `diepa-seile`, not custom URLs.
+The resolver uses actual product collection membership, preferring the current
+collection context when it matches. Direct visits work without browser history;
+if a product belongs to both assortments and has no collection context, HaWo
+wins deterministically. Products in neither assortment receive no extra marker
+or breadcrumb. No backend deployment is needed for this navigation update.
 
 Copy [hanfwolf-header-design.css](assets/hanfwolf-header-design.css),
 [header.liquid](sections/header.liquid) and

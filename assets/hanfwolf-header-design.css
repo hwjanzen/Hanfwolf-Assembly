@@ -42,6 +42,7 @@
 }
 
 .hanfwolf-header .header__active-menu-item,
+.hanfwolf-header .menu-drawer__menu-item--active,
 .hanfwolf-header .list-menu__item--active,
 .hanfwolf-header .mega-menu__link--active {
   color: var(--header-accent);

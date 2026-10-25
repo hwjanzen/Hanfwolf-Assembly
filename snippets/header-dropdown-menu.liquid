@@ -7,9 +7,16 @@
   {% render 'header-dropdown-menu' %}
 {% enddoc %}
 
+{%- capture hw_product_collection -%}{% render 'hanfwolf-product-collection', product: product, collection: collection %}{%- endcapture -%}
 <nav class="header__inline-menu">
   <ul class="list-menu list-menu--inline" role="list">
     {%- for link in section.settings.menu.links -%}
+      {%- liquid
+        assign hw_assortment_active = false
+        if hw_product_collection != blank and link.type == 'collection_link' and link.object.handle == hw_product_collection
+          assign hw_assortment_active = true
+        endif
+      -%}
       <li>
         {%- if link.links != blank -%}
           <header-menu>
@@ -19,7 +26,7 @@
                 class="header__menu-item list-menu__item link focus-inset"
               >
                 <span
-                  {%- if link.child_active %}
+                  {%- if link.child_active or hw_assortment_active %}
                     class="header__active-menu-item"
                   {% endif %}
                 >
@@ -91,7 +98,7 @@
             {% endif %}
           >
             <span
-              {%- if link.current %}
+              {%- if link.current or hw_assortment_active %}
                 class="header__active-menu-item"
               {% endif %}
             >
