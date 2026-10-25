@@ -70,6 +70,10 @@
 >
   <div class="page-width">
     <h2 class="h1">{{ section.settings.heading | escape }}</h2>
+    {% comment %}HW20261025 Produktbezug direkt im Konfigurator anzeigen, nicht nur im Browser-Tab.{% endcomment %}
+    {%- if product != blank -%}
+      <h3 class="rope-configurator__product-title">{{ product.title | escape }}</h3>
+    {%- endif -%}
     <p>{{ section.settings.description | escape }}</p>
     <form id="RopeConfigurator-{{ section.id }}" data-rope-configurator>
       <div class="rope-configurator__cuts" data-rope-cuts></div>
@@ -116,6 +120,23 @@
   <template data-rope-cut-template>
     <fieldset class="rope-cut">
       <legend>Zuschnitt</legend>
+      {% comment %}HW20261025 Schematische Vorschau aus Ende 1, Material und Ende 2; keine massstabsgetreue Darstellung.{% endcomment %}
+      <figure class="rope-cut__preview" data-rope-preview hidden>
+        <figcaption>Schematische Vorschau – nicht maßstabsgetreu</figcaption>
+        <div class="rope-cut__preview-parts">
+          <div class="rope-cut__preview-part" data-rope-preview-end="end_1" hidden></div>
+          <div class="rope-cut__preview-part">
+            <span class="rope-cut__preview-label">Material</span>
+            {%- if product.featured_image != blank -%}
+              {{ product.featured_image | image_url: width: 600 | image_tag: loading: 'lazy', alt: product.title }}
+            {%- else -%}
+              <p class="rope-cut__preview-placeholder">Kein Produktbild hinterlegt</p>
+            {%- endif -%}
+            <span>{{ product.title | escape }}</span>
+          </div>
+          <div class="rope-cut__preview-part" data-rope-preview-end="end_2" hidden></div>
+        </div>
+      </figure>
       <fieldset class="rope-cut__inputs" data-rope-inputs>
         <legend class="visually-hidden">Zuschnitt bearbeiten</legend>
         <div class="rope-cut__field">

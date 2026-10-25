@@ -156,6 +156,24 @@ Only these theme files need uploading; no app deployment/reinstall is required.
 
 ### Configurator charcoal/silver design
 
+The `HW20261025` live preview adds illustrative end_1/material/end_2 tiles per
+cut: horizontal on desktop, vertical below 750px. Component variant images take
+precedence over component product images. Empty selections hide the end tile;
+selected components without images show a labeled placeholder. Material uses the
+current product image. Only the two end position codes participate; presentation
+options do not. Images are not to scale and do not enter pricing snapshots/hashes.
+The unconfigured `end_1` and `end_2` selections are displayed as **Ende spitz**
+(the standard cut end) in selectors, order summaries and cart properties.
+Other optional positions retain **Ohne**. Standard ends still hide the end image
+tile. Immutable snapshots/hashes and pricing remain unchanged; existing cart
+lines are not rewritten.
+Deploy the backend (config response and configurator script) and upload both
+`seile.liquid` and `rope-configurator-design.css`. No app reinstall is required.
+
+The `HW20261025` update displays the current product's full, escaped title
+directly below the configurator heading, with a green accent and wrapping for
+long names on mobile. Upload both the section and stylesheet for this update.
+
 Copy [rope-configurator-design.css](assets/rope-configurator-design.css) and the
 updated [seile section](sections/seile.liquid) into the active theme.
 The `HW20261021` stylesheet adds a scoped charcoal surface, silver primary

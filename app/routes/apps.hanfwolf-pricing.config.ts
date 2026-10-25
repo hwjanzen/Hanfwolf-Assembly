@@ -41,7 +41,11 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
           ...position,
           options: data.mappings
             .filter((mapping) => mapping.positionId === position.id)
-            .map((mapping) => ({ id: mapping.id, label: mapping.label })),
+            .map((mapping) => ({
+              id: mapping.id,
+              label: mapping.label,
+              image: data.componentImages.get(mapping.variantId) ?? null,
+            })),
         })),
       },
       { headers: { "Cache-Control": "no-store" } },

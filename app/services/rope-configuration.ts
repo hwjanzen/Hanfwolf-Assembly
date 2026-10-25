@@ -252,6 +252,16 @@ export function configurationId(shop: string, snapshot: ConfigurationSnapshot) {
   return createHash("sha256").update(canonical).digest("hex");
 }
 
+// Keep immutable snapshots/hashes unchanged when renaming the standard rope end.
+export function selectionDisplayLabel(
+  selection: ConfigurationSnapshot["selections"][number],
+) {
+  return selection.mappingId === null &&
+    (selection.code === "end_1" || selection.code === "end_2")
+    ? "Ende spitz"
+    : selection.componentLabel;
+}
+
 export function configurationProperties(
   snapshot: ConfigurationSnapshot,
   id: string,
@@ -261,7 +271,7 @@ export function configurationProperties(
     ...Object.fromEntries(
       snapshot.selections.map((selection) => [
         selection.label,
-        selection.componentLabel,
+        selectionDisplayLabel(selection),
       ]),
     ),
     _hanfwolf_configuration_id: id,

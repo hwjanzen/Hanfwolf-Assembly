@@ -6,6 +6,7 @@ import {
   configurationProperties,
   normalizeConfigurationInput,
   priceCents,
+  selectionDisplayLabel,
   type ComponentMapping,
   type Position,
 } from "./rope-configuration";
@@ -99,6 +100,20 @@ describe("immutable piece configurations", () => {
     expect(result.unitPriceCents).toBe(750);
     expect(result.unitWeightKilograms).toBe(0.25);
     expect(result.selections[1].componentLabel).toBe("Ohne");
+    expect(configurationProperties(result, "hash")).toHaveProperty(
+      "Endverbindung 2",
+      "Ende spitz",
+    );
+  });
+
+  it("labels only unconfigured rope ends as Ende spitz without changing snapshots", () => {
+    const selection = { ...snapshot().selections[0], mappingId: null, componentLabel: "Ohne" };
+    for (const code of ["end_1", "end_2"]) {
+      expect(selectionDisplayLabel({ ...selection, code })).toBe("Ende spitz");
+    }
+    expect(selectionDisplayLabel({ ...selection, code: "presentation" })).toBe("Ohne");
+    expect(selectionDisplayLabel(snapshot().selections[0])).toBe("Kausche");
+    expect(selection.componentLabel).toBe("Ohne");
   });
 
   it("canonicalizes selection order and scopes configuration hashes by shop and price snapshot", () => {

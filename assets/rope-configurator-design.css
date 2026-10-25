@@ -27,6 +27,16 @@
   margin: 0 0 1.2rem;
 }
 
+/* HW20261025: Keep the configured product identifiable, including long rope names. */
+[data-rope-configurator-section] .rope-configurator__product-title {
+  margin: 0 0 1.6rem;
+  padding-left: 1.2rem;
+  border-left: 3px solid var(--rope-brand);
+  font-size: clamp(1.8rem, 2.5vw, 2.4rem);
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
 [data-rope-configurator-section] p {
   color: var(--rope-muted);
   line-height: 1.6;
@@ -221,7 +231,63 @@
   display: none !important;
 }
 
+/* HW20261025: Three illustrative tiles per cut, independent of order/price data. */
+[data-rope-configurator-section] .rope-cut__preview {
+  margin: 0 0 2.4rem;
+}
+
+[data-rope-configurator-section] .rope-cut__preview figcaption {
+  margin-bottom: 1rem;
+  color: var(--rope-muted);
+  font-size: 1.3rem;
+}
+
+[data-rope-configurator-section] .rope-cut__preview-parts {
+  display: flex;
+  gap: 1.2rem;
+}
+
+[data-rope-configurator-section] .rope-cut__preview-part {
+  display: flex;
+  flex: 1 1 0;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.8rem;
+  padding: 1.2rem;
+  border: 1px solid var(--rope-border);
+  border-radius: 0.6rem;
+  background: #ffffff;
+  color: #202328;
+  overflow-wrap: anywhere;
+  font-size: 1.4rem;
+}
+
+[data-rope-configurator-section] .rope-cut__preview-part img {
+  width: 100%;
+  height: 16rem;
+  object-fit: contain;
+}
+
+[data-rope-configurator-section] .rope-cut__preview-label {
+  color: #117b3b;
+  font-weight: 600;
+}
+
+[data-rope-configurator-section] .rope-cut__preview-placeholder {
+  display: grid;
+  place-items: center;
+  min-height: 16rem;
+  margin: 0;
+  border: 1px dashed #89958e;
+  color: #555d67;
+  text-align: center;
+}
+
 @media screen and (max-width: 749px) {
+  [data-rope-configurator-section] .rope-cut__preview-parts {
+    flex-direction: column;
+  }
+
   [data-rope-configurator-section] .rope-cut,
   [data-rope-configurator-section] .rope-configurator__summary {
     padding: 1.4rem;

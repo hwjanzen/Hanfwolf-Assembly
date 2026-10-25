@@ -85,6 +85,12 @@
     review.hidden = true;
   }
 
+  function defaultSelectionLabel(position) {
+    return position.code === "end_1" || position.code === "end_2"
+      ? "Ende spitz"
+      : "Ohne";
+  }
+
   function render() {
     var allFinished =
       cuts.length > 0 &&
@@ -147,7 +153,7 @@
             var option = position.options.find(function (entry) {
               return entry.id === selection.mappingId;
             });
-            return position.label + ": " + (option ? option.label : "Ohne");
+            return position.label + ": " + (option ? option.label : defaultSelectionLabel(position));
           })
           .join("; "),
       ];
@@ -369,10 +375,65 @@
     }
   }
 
+  // HW20261025: Images are illustrative only; selection and pricing remain unchanged.
+  function handlePreviewImageError(image) {
+    image.addEventListener(
+      "error",
+      function () {
+        var missing = document.createElement("p");
+        missing.className = "rope-cut__preview-placeholder";
+        missing.textContent = "Bild konnte nicht geladen werden";
+        image.replaceWith(missing);
+      },
+      { once: true },
+    );
+  }
+
+  function updatePreview(element, selects) {
+    var preview = element.querySelector("[data-rope-preview]");
+    if (!preview) return;
+    preview.hidden = false;
+    preview.querySelectorAll("[data-rope-preview-end]").forEach(function (part) {
+      var position = setup.positions.find(function (entry) {
+        return entry.code === part.dataset.ropePreviewEnd;
+      });
+      var select = position && selects.get(position.id);
+      var option = select && position.options.find(function (entry) {
+        return entry.id === select.value;
+      });
+      part.replaceChildren();
+      part.hidden = !option;
+      if (!option) return;
+      var heading = document.createElement("span");
+      heading.className = "rope-cut__preview-label";
+      heading.textContent = position.label;
+      part.appendChild(heading);
+      if (option.image) {
+        var image = document.createElement("img");
+        image.alt = option.image.altText || option.label;
+        image.loading = "lazy";
+        handlePreviewImageError(image);
+        image.src = option.image.url;
+        part.appendChild(image);
+      } else {
+        var placeholder = document.createElement("p");
+        placeholder.className = "rope-cut__preview-placeholder";
+        placeholder.textContent = "Kein Bild hinterlegt";
+        part.appendChild(placeholder);
+      }
+      var label = document.createElement("span");
+      label.textContent = option.label;
+      part.appendChild(label);
+    });
+  }
+
   function addCut() {
     invalidateReview();
     var fragment = template.content.cloneNode(true);
     var element = fragment.querySelector(".rope-cut");
+    element
+      .querySelectorAll("[data-rope-preview] img")
+      .forEach(handlePreviewImageError);
     var inputs = element.querySelector("[data-rope-inputs]");
     var index = nextIndex++;
     var quantity = inputs.querySelector("[data-rope-quantity]");
@@ -401,7 +462,7 @@
       label.textContent = position.label;
       var empty = document.createElement("option");
       empty.value = "";
-      empty.textContent = position.required ? "Bitte waehlen" : "Ohne";
+      empty.textContent = position.required ? "Bitte waehlen" : defaultSelectionLabel(position);
       select.appendChild(empty);
       position.options.forEach(function (entry) {
         var option = document.createElement("option");
@@ -412,7 +473,11 @@
       wrapper.append(label, select);
       inputs.appendChild(wrapper);
       selects.set(position.id, select);
+      select.addEventListener("change", function () {
+        updatePreview(element, selects);
+      });
     });
+    updatePreview(element, selects);
     var cut = {
       element,
       inputs,

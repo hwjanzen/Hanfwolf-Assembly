@@ -85,7 +85,8 @@ export const COMPONENT_VARIANTS_QUERY = `#graphql
     nodes(ids: $ids) {
       ... on ProductVariant {
         id price title
-        product { title status }
+        image { url altText }
+        product { title status featuredImage { url altText } }
         inventoryItem { requiresShipping measurement { weight { value unit } } }
       }
     }
@@ -264,7 +265,12 @@ export async function loadConfigurationProduct(
     id: string;
     price: string;
     title: string;
-    product: { title: string; status: string };
+    image: { url: string; altText: string | null } | null;
+    product: {
+      title: string;
+      status: string;
+      featuredImage: { url: string; altText: string | null } | null;
+    };
     inventoryItem: {
       requiresShipping: boolean;
       measurement: { weight: { value: number; unit: string } | null };
@@ -330,6 +336,13 @@ export async function loadConfigurationProduct(
     master,
     positions,
     mappings,
+    // HW20261025: Presentation data stays outside immutable pricing snapshots.
+    componentImages: new Map(
+      [...variants].map(([id, variant]) => [
+        id,
+        variant.image ?? variant.product.featuredImage ?? null,
+      ]),
+    ),
     currency: result.data.shop.currencyCode,
   };
 }

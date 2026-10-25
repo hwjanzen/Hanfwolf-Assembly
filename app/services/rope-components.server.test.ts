@@ -72,7 +72,8 @@ function component() {
     id: gid("ProductVariant", 20),
     price: "2.50",
     title: "Standard",
-    product: { title: "Kausche A", status: "ACTIVE" },
+    image: null,
+    product: { title: "Kausche A", status: "ACTIVE", featuredImage: null },
     inventoryItem: {
       requiresShipping: true,
       measurement: { weight: { value: 50, unit: "GRAMS" } },
@@ -84,6 +85,39 @@ beforeEach(() => {
 });
 
 describe("explicit component mappings", () => {
+  it.each(["variant", "product", "missing"])(
+    "provides %s images separately from pricing mappings",
+    async (source) => {
+      const image = {
+        url: "https://cdn.shopify.com/component.png",
+        altText: "Kausche",
+      };
+      const variant = {
+        ...component(),
+        image: source === "variant" ? image : null,
+        product: {
+          ...component().product,
+          featuredImage:
+            source === "missing"
+              ? null
+              : { ...image, url: "https://cdn.shopify.com/product.png" },
+        },
+      };
+      graphql
+        .mockResolvedValueOnce({ ok: true, data: fixture() })
+        .mockResolvedValueOnce({ ok: true, data: { nodes: [variant] } });
+      const data = await loadConfigurationProduct(
+        {},
+        gid("Product", 1),
+        DEFAULT_ROPE_CONFIG,
+      );
+      expect(data.componentImages.get(variant.id)).toEqual(
+        source === "variant" ? image : variant.product.featuredImage,
+      );
+      expect(data.mappings[0]).not.toHaveProperty("image");
+    },
+  );
+
   it("uses the app-resolved definition types rather than assuming a type-name suffix", async () => {
     const data = fixture();
     data.positionDefinition.type = "resolved-position-type";

@@ -6,6 +6,7 @@ import {
   configurationProperties,
   ConfigurationInputError,
   priceCents,
+  selectionDisplayLabel,
   type ConfigurationInput,
   type ConfigurationSnapshot,
 } from "./rope-configuration";
@@ -53,7 +54,7 @@ export function configurationResponse(record: {
       lengthMeters: snapshot.lengthDecimeters / 10,
       selections: snapshot.selections.map((entry) => ({
         label: entry.label,
-        value: entry.componentLabel,
+        value: selectionDisplayLabel(entry),
       })),
     },
   };
