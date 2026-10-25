@@ -19,6 +19,8 @@
     display: none;
     }
 
+    /* HW20261022 Removed structural overrides: Dawn owns the fixed viewport
+       overlay and absolute submenu. Relative positioning breaks its hit areas.
     .mobile-facets,
     .mobile-facets__inner,
     .mobile-facets__main {
@@ -40,6 +42,7 @@
     position: relative;
     z-index: 70;
     }
+    */
 
     .facets-container .facets,
     facet-filters-form .facets {
@@ -310,16 +313,18 @@
     .mobile-facets__submenu {
         display: flex;
         flex-direction: column;
-        height: 300px;
-        max-height: 300px;
+        /* HW20261022 Original: height: 300px; max-height: 300px;
+           Dawn stretches the absolute submenu to the available drawer height. */
         min-height: 0;
         background: #fbfdf9;
     }
 
+    /* HW20261022 Removed duplicate fixed-height constraint:
     .mobile-facets__submenu.gradient {
         height: 300px;
         max-height: 300px;
     }
+    */
 
     .mobile-facets__header {
         min-height: 4.4rem;

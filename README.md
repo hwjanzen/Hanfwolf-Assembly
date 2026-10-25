@@ -56,6 +56,20 @@ Desktop filter lists stay open on selection and close on outside clicks or
 Escape, including after AJAX markup replacement. Mobile drawer behavior remains
 with Dawn. Caption hover underlines and inner hover shadows are suppressed;
 keyboard focus remains visible. The filter container does not move on hover.
+The `HW20261022` mobile fix removes legacy relative-position/z-index overrides
+and 300px submenu limits from `component-collection-filters.css`; Dawn must own
+the fixed viewport overlay and absolute sliding panels for correct hit testing.
+Upload that updated base file (merge existing merchant font sizes) together
+with `collection-filter-design.css`. The native mobile filter/sort launcher
+is intentional; it opens the styled drawer and each filter's values. The custom
+outside-click/Escape handler remains desktop-only; no Dawn JavaScript is changed.
+The subsequent `HW20261022` mobile finish in `collection-filter-design.css`
+adds charcoal drawer/submenu headers, light value cards, green checked states
+and larger rounded apply buttons below 990px. Drawer geometry, native checkbox
+indicators and focus/close behavior remain managed by Dawn.
+Text-filter squares and checkmarks share a centered grid cell on desktop/mobile,
+so custom row padding/font sizes cannot displace the mark. Swatch/image filter
+layouts and native checked/unchecked visibility are preserved.
 
 The `HW20261021` design update loads
 [collection-filter-design.css](assets/collection-filter-design.css) after the
@@ -160,8 +174,14 @@ The `HW20261025` live preview adds illustrative end_1/material/end_2 tiles per
 cut: horizontal on desktop, vertical below 750px. Component variant images take
 precedence over component product images. Empty selections hide the end tile;
 selected components without images show a labeled placeholder. Material uses the
-current product image. Only the two end position codes participate; presentation
-options do not. Images are not to scale and do not enter pricing snapshots/hashes.
+current product image. A selected presentation (for example Haspel or Ring) adds
+a separate preview below the three rope tiles using its mapped component image;
+**Ohne** hides the entire presentation preview. Inputs appear first in two
+fieldsets: quantity/length, then component configuration. Both groups are locked
+and unlocked together by the existing finish/edit workflow. Deploy the updated
+configurator script and upload `seile.liquid` and `rope-configurator-design.css`
+together for this layout. The script remains compatible with the old input group.
+Images are not to scale and do not enter pricing snapshots/hashes.
 The unconfigured `end_1` and `end_2` selections are displayed as **Ende spitz**
 (the standard cut end) in selectors, order summaries and cart properties.
 Other optional positions retain **Ohne**. Standard ends still hide the end image

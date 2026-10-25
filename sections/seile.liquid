@@ -120,9 +120,32 @@
   <template data-rope-cut-template>
     <fieldset class="rope-cut">
       <legend>Zuschnitt</legend>
-      {% comment %}HW20261025 Schematische Vorschau aus Ende 1, Material und Ende 2; keine massstabsgetreue Darstellung.{% endcomment %}
-      <figure class="rope-cut__preview" data-rope-preview hidden>
-        <figcaption>Schematische Vorschau – nicht maßstabsgetreu</figcaption>
+      {% comment %}HW20261025 Eingaben vor der Vorschau; Seil und Aufmachung getrennt pruefen.{% endcomment %}
+      <fieldset class="rope-cut__input-groups" data-rope-inputs>
+        <legend class="visually-hidden">Zuschnitt bearbeiten</legend>
+        <fieldset class="rope-cut__inputs">
+          <legend>Anzahl und Länge</legend>
+          <div class="rope-cut__field">
+            <label>
+              Anzahl Stück
+              <input type="number" min="1" max="999" step="1" value="1" required data-rope-quantity>
+            </label>
+          </div>
+          <div class="rope-cut__field">
+            <label>
+              Länge je Stück (m)
+              <input type="number" inputmode="decimal" min="0.5" max="500" step="0.1" value="1" required data-rope-length>
+            </label>
+          </div>
+        </fieldset>
+        <fieldset class="rope-cut__inputs" data-rope-options>
+          <legend>Konfiguration</legend>
+        </fieldset>
+      </fieldset>
+      {% comment %}HW20261025 Schematische Vorschau aus Ende 1, Material, Ende 2 und optionaler Aufmachung; keine massstabsgetreue Darstellung.{% endcomment %}
+      <div data-rope-preview hidden>
+      <figure class="rope-cut__preview">
+        <figcaption>Seilkonfiguration – schematische Vorschau, nicht maßstabsgetreu</figcaption>
         <div class="rope-cut__preview-parts">
           <div class="rope-cut__preview-part" data-rope-preview-end="end_1" hidden></div>
           <div class="rope-cut__preview-part">
@@ -137,21 +160,11 @@
           <div class="rope-cut__preview-part" data-rope-preview-end="end_2" hidden></div>
         </div>
       </figure>
-      <fieldset class="rope-cut__inputs" data-rope-inputs>
-        <legend class="visually-hidden">Zuschnitt bearbeiten</legend>
-        <div class="rope-cut__field">
-          <label>
-            Anzahl Stück
-            <input type="number" min="1" max="999" step="1" value="1" required data-rope-quantity>
-          </label>
-        </div>
-        <div class="rope-cut__field">
-          <label>
-            Länge je Stück (m)
-            <input type="number" inputmode="decimal" min="0.5" max="500" step="0.1" value="1" required data-rope-length>
-          </label>
-        </div>
-      </fieldset>
+      <figure class="rope-cut__preview rope-cut__preview--presentation" data-rope-preview-group hidden>
+        <figcaption>Aufmachung</figcaption>
+        <div class="rope-cut__preview-part" data-rope-preview-end="presentation" hidden></div>
+      </figure>
+      </div>
       <div class="rope-configurator__actions">
         <button class="button button--secondary" type="button" data-rope-finish>Zuschnitt fertigstellen</button>
         <button class="button button--secondary" type="button" data-rope-edit hidden>Bearbeiten</button>

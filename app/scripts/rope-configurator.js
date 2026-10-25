@@ -425,6 +425,10 @@
       label.textContent = option.label;
       part.appendChild(label);
     });
+    preview.querySelectorAll("[data-rope-preview-group]").forEach(function (group) {
+      group.hidden = !Array.from(group.querySelectorAll("[data-rope-preview-end]"))
+        .some(function (part) { return !part.hidden; });
+    });
   }
 
   function addCut() {
@@ -471,7 +475,7 @@
         select.appendChild(option);
       });
       wrapper.append(label, select);
-      inputs.appendChild(wrapper);
+      (inputs.querySelector("[data-rope-options]") || inputs).appendChild(wrapper);
       selects.set(position.id, select);
       select.addEventListener("change", function () {
         updatePreview(element, selects);

@@ -6,6 +6,8 @@ facet-filters-form {
   --collection-filter-border: #b1c6a8;
   --collection-filter-border-hover: #557d49;
   --collection-filter-text: #20341d;
+  /* HW20261022: Mobile controls are outside the desktop facets wrapper. */
+  --collection-filter-height: 4.8rem;
 }
 
 .facets-container facet-filters-form .facets__wrapper {
@@ -71,6 +73,242 @@ facet-filters-form .facets__display {
 .facets-container .active-facets__button-inner,
 facet-filters-form .active-facets__button-inner {
   box-shadow: none;
+}
+
+/* HW20261022: Overlay square/check in one grid cell instead of Dawn's fixed
+   offsets (desktop left .3rem/top 1.4rem; mobile left 2.8rem/top 1.9rem).
+   Only text checkboxes have a direct square SVG; swatch/image filters stay native. */
+.facets-container :is(.facet-checkbox, .mobile-facets__label):has(> svg) {
+  display: grid;
+  grid-template-columns: 1.6rem minmax(0, 1fr);
+  align-items: center;
+  column-gap: 1.2rem;
+}
+
+.facets-container :is(.facet-checkbox, .mobile-facets__label) > svg,
+.facets-container .facet-checkbox > .svg-wrapper {
+  grid-area: 1 / 1;
+  align-self: center;
+  justify-self: center;
+  margin: 0;
+}
+
+.facets-container .facet-checkbox > .svg-wrapper,
+.facets-container .mobile-facets__label > .icon-checkmark {
+  position: relative;
+  inset: auto;
+  transform: none;
+  z-index: 3;
+  background: transparent;
+}
+
+.facets-container :is(.facet-checkbox, .mobile-facets__label) > .facet-checkbox__text {
+  grid-area: 1 / 2;
+}
+
+/* HW20261022: Style the native mobile drawer without changing its positioning,
+   visibility, transforms or pointer events, which Dawn's MenuDrawer controls. */
+.facets-container .mobile-facets__open,
+facet-filters-form .mobile-facets__open {
+  width: auto;
+  min-height: 4.8rem;
+  padding: 1rem 1.4rem;
+  border-radius: 0.6rem;
+  box-shadow: none;
+}
+
+.facets-container .mobile-facets__open:hover,
+facet-filters-form .mobile-facets__open:hover {
+  box-shadow: none;
+}
+
+.facets-container .mobile-facets__inner {
+  color: var(--collection-filter-text);
+  background: #fbfdf9;
+}
+
+.facets-container .mobile-facets__summary {
+  min-height: 4.8rem;
+  border-bottom: 1px solid rgba(85, 125, 73, 0.2);
+  color: var(--collection-filter-text);
+}
+
+.facets-container .mobile-facets__summary > div {
+  gap: 1rem;
+}
+
+.facets-container .mobile-facets__summary > div > span:first-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.facets-container .mobile-facets__arrow {
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+/* HW20261022: Charcoal/green mobile finish. Earlier presentation rules remain
+   above for traceability; Dawn still owns overlay geometry and transitions. */
+@media screen and (max-width: 989px) {
+  .facets-container .mobile-facets__open {
+    border-color: #555d67;
+    color: #f1f3f5;
+    background: #202328;
+  }
+
+  .facets-container .mobile-facets__open:hover {
+    border-color: #158d45;
+    background: #2c3139;
+  }
+
+  .facets-container .mobile-facets__open-label {
+    text-decoration: none;
+  }
+
+  .facets-container .mobile-facets__open svg {
+    color: #6bd994;
+  }
+
+  .facets-container .mobile-facets__inner {
+    --color-background: 247, 249, 248;
+    --color-foreground: 32, 35, 40;
+    --gradient-background: #f7f9f8;
+    color: #202328;
+    background: #f7f9f8;
+  }
+
+  .facets-container .mobile-facets__header {
+    padding: 2rem 5.4rem 1.8rem 2rem;
+    border-bottom: 2px solid #158d45;
+    background: #202328;
+    text-align: left;
+  }
+
+  .facets-container .mobile-facets__heading {
+    color: #f1f3f5;
+    font-weight: 600;
+  }
+
+  .facets-container .mobile-facets__count {
+    margin-top: 0.6rem;
+    color: #bbc2cb;
+  }
+
+  .facets-container .mobile-facets__close {
+    color: #f1f3f5;
+  }
+
+  .facets-container .mobile-facets__summary {
+    padding: 1.8rem 2rem;
+    border-bottom: 1px solid #dce2df;
+    color: #202328;
+    font-weight: 600;
+    line-height: 1.5;
+  }
+
+  .facets-container .mobile-facets__summary:hover,
+  .facets-container .mobile-facets__summary:focus-visible {
+    background: #eaf4ee;
+  }
+
+  .facets-container .mobile-facets__arrow {
+    color: #117b3b;
+  }
+
+  .facets-container .mobile-facets__submenu {
+    background: #f7f9f8;
+  }
+
+  .facets-container .mobile-facets__close-button {
+    margin: 0;
+    padding: 1.8rem 2rem;
+    border-bottom: 2px solid #158d45;
+    color: #f1f3f5;
+    background: #202328;
+    font-weight: 600;
+    line-height: 1.5;
+  }
+
+  .facets-container .mobile-facets__list {
+    padding: 1.6rem;
+    gap: 0.8rem;
+  }
+
+  .facets-container .mobile-facets__item {
+    border: 1px solid #dce2df;
+    border-radius: 0.6rem;
+    background: #ffffff;
+  }
+
+  .facets-container .mobile-facets__label {
+    min-height: 4.8rem;
+    padding: 1.5rem 2rem 1.5rem 2.5rem;
+    /* HW20261022 Original: gap: 0; shared square/check grid uses a text gap. */
+    column-gap: 1.2rem;
+    color: #202328;
+    font-weight: 500;
+  }
+
+  .facets-container .mobile-facets__label .facet-checkbox__text,
+  .facets-container .mobile-facets__label .facet-checkbox__text-label {
+    color: inherit;
+    font-weight: inherit;
+    line-height: 1.5;
+  }
+
+  .facets-container .mobile-facets__label:has(input:checked) {
+    color: #0e6932;
+    background: #eaf4ee;
+  }
+
+  .facets-container .mobile-facets__label:has(input:disabled) {
+    color: #626a65;
+    background: #f1f3f2;
+  }
+
+  .facets-container .mobile-facets__label .icon-checkmark {
+    color: #117b3b;
+  }
+
+  .facets-container .mobile-facets__footer {
+    gap: 1.2rem;
+    padding: 1.6rem;
+    border-top: 1px solid #dce2df;
+    background: #ffffff;
+  }
+
+  .facets-container .mobile-facets__footer > * + * {
+    margin-left: 0;
+  }
+
+  .facets-container .mobile-facets__footer .button {
+    min-height: 4.8rem;
+    border: 1px solid #117b3b;
+    border-radius: 0.6rem;
+    color: #ffffff;
+    background: #117b3b;
+    font-weight: 600;
+  }
+
+  .facets-container .mobile-facets__footer .button::before,
+  .facets-container .mobile-facets__footer .button::after {
+    content: none;
+  }
+
+  .facets-container .mobile-facets__footer .button:hover {
+    background: #0e6932;
+  }
+
+  .facets-container .mobile-facets__clear {
+    color: #202328;
+    text-underline-offset: 0.4rem;
+  }
+
+  .facets-container .mobile-facets :is(button, a, summary):focus-visible,
+  .facets-container .mobile-facets__label:has(input:focus-visible) {
+    outline: 2px solid #158d45;
+    outline-offset: -3px;
+  }
 }
 
 @media screen and (min-width: 750px) {
