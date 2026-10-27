@@ -59,11 +59,11 @@ export type ConfigurationSnapshot = {
 
 export function priceCents(value: string) {
   if (!/^\d+(?:\.\d{1,2})?$/.test(value)) {
-    throw new Error("Ein gepflegter Shopify-Preis ist ungueltig.");
+    throw new Error("Ein gepflegter Shopify-Preis ist ungültig.");
   }
   const [whole, fraction = ""] = value.split(".");
   const cents = Number(whole) * 100 + Number(fraction.padEnd(2, "0"));
-  if (!Number.isSafeInteger(cents)) throw new Error("Der Preis ist zu gross.");
+  if (!Number.isSafeInteger(cents)) throw new Error("Der Preis ist zu groß.");
   return cents;
 }
 
@@ -72,7 +72,7 @@ export function normalizeConfigurationInput(
   config: RopeConfiguratorConfig,
 ): ConfigurationInput {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
-    throw new ConfigurationInputError("Ungueltige Konfiguration.");
+    throw new ConfigurationInputError("Ungültige Konfiguration.");
   }
   const input = value as Record<string, unknown>;
   const productId = String(input.productId || "");
@@ -82,10 +82,10 @@ export function normalizeConfigurationInput(
     .trim()
     .replace(",", ".");
   if (!/^gid:\/\/shopify\/Product\/\d+$/.test(productId)) {
-    throw new ConfigurationInputError("Ungueltiger Basisartikel.");
+    throw new ConfigurationInputError("Ungültiger Basisartikel.");
   }
   if (!/^[a-zA-Z0-9-]{16,80}$/.test(requestId)) {
-    throw new ConfigurationInputError("Ungueltige Anfrage-ID.");
+    throw new ConfigurationInputError("Ungültige Anfrage-ID.");
   }
   if (
     !Number.isSafeInteger(quantity) ||
@@ -93,12 +93,12 @@ export function normalizeConfigurationInput(
     quantity > config.maxQuantity
   ) {
     throw new ConfigurationInputError(
-      `Die Stueckzahl muss zwischen ${config.minQuantity} und ${config.maxQuantity} liegen.`,
+      `Die Stückzahl muss zwischen ${config.minQuantity} und ${config.maxQuantity} liegen.`,
     );
   }
   if (!/^\d+(?:\.\d)?$/.test(length)) {
     throw new ConfigurationInputError(
-      "Die Laenge muss in Schritten von 0,1 m angegeben werden.",
+      "Die Länge muss in Schritten von 0,1 m angegeben werden.",
     );
   }
   const lengthDecimeters = Math.round(Number(length) * 10);
@@ -108,11 +108,11 @@ export function normalizeConfigurationInput(
     lengthDecimeters * 10 > config.maxLengthHundredths
   ) {
     throw new ConfigurationInputError(
-      "Die Laenge liegt ausserhalb des erlaubten Bereichs.",
+      "Die Länge liegt außerhalb des erlaubten Bereichs.",
     );
   }
   if (!Array.isArray(input.selections) || input.selections.length > 30) {
-    throw new ConfigurationInputError("Ungueltige Komponentenauswahl.");
+    throw new ConfigurationInputError("Ungültige Komponentenauswahl.");
   }
   const seen = new Set<string>();
   const selections = input.selections.map((selection: unknown) => {
@@ -121,7 +121,7 @@ export function normalizeConfigurationInput(
       typeof selection !== "object" ||
       Array.isArray(selection)
     ) {
-      throw new ConfigurationInputError("Ungueltige Komponentenauswahl.");
+      throw new ConfigurationInputError("Ungültige Komponentenauswahl.");
     }
     const entry = selection as Record<string, unknown>;
     const positionId = String(entry.positionId || "");
@@ -136,7 +136,7 @@ export function normalizeConfigurationInput(
       seen.has(positionId)
     ) {
       throw new ConfigurationInputError(
-        "Ungueltige oder doppelte Konfigurationsposition.",
+        "Ungültige oder doppelte Konfigurationsposition.",
       );
     }
     seen.add(positionId);
@@ -160,7 +160,7 @@ export function buildConfigurationSnapshot(
 ): ConfigurationSnapshot {
   if (input.selections.length !== positions.length) {
     throw new ConfigurationInputError(
-      "Die Konfigurationspositionen haben sich geaendert. Bitte die Seite neu laden.",
+      "Die Konfigurationspositionen haben sich geändert. Bitte die Seite neu laden.",
     );
   }
   const selections = [...positions]
@@ -171,7 +171,7 @@ export function buildConfigurationSnapshot(
       );
       if (!selected)
         throw new ConfigurationInputError(
-          `Die Auswahl fuer ${position.label} fehlt.`,
+          `Die Auswahl für ${position.label} fehlt.`,
         );
       const mapping = selected.mappingId
         ? mappings.find(
@@ -182,7 +182,7 @@ export function buildConfigurationSnapshot(
         : null;
       if ((selected.mappingId && !mapping) || (position.required && !mapping)) {
         throw new ConfigurationInputError(
-          `Die Auswahl fuer ${position.label} ist nicht freigegeben.`,
+          `Die Auswahl für ${position.label} ist nicht freigegeben.`,
         );
       }
       return {
@@ -226,7 +226,7 @@ export function buildConfigurationSnapshot(
     unitWeightKilograms <= 0
   ) {
     throw new Error(
-      "Preis oder Versandgewicht der Konfiguration ist ungueltig.",
+      "Preis oder Versandgewicht der Konfiguration ist ungültig.",
     );
   }
   return {

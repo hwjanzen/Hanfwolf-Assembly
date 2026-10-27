@@ -40,7 +40,7 @@ export async function initializeRopePositions(admin: unknown) {
     const page: { hasNextPage: boolean; endCursor: string | null } =
       result.data.metaobjects.pageInfo;
     if (page.hasNextPage && (!page.endCursor || page.endCursor === after)) {
-      throw new Error("Positionen konnten nicht vollstaendig geladen werden.");
+      throw new Error("Positionen konnten nicht vollständig geladen werden.");
     }
     after = page.hasNextPage ? page.endCursor : null;
   } while (after);
@@ -60,7 +60,7 @@ export async function initializeRopePositions(admin: unknown) {
       )
     ) {
       throw new Error(
-        `Der Handle fuer ${position.code} ist bereits mit einem anderen Code belegt.`,
+        `Der Handle für ${position.code} ist bereits mit einem anderen Code belegt.`,
       );
     }
   }
@@ -95,7 +95,7 @@ export async function initializeRopePositions(admin: unknown) {
     const payload = result.data.metaobjectUpsert;
     if (payload.userErrors.length || !payload.metaobject) {
       throw new Error(
-        `Position ${position.code}: ${payload.userErrors.map((error) => error.message).join("; ") || "Shopify hat keinen Eintrag bestaetigt."}`,
+        `Position ${position.code}: ${payload.userErrors.map((error) => error.message).join("; ") || "Shopify hat keinen Eintrag bestätigt."}`,
       );
     }
     created += 1;

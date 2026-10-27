@@ -60,7 +60,7 @@
       payload = await response.json();
     } catch (error) {
       throw new Error(
-        "Der Konfigurator-Service lieferte keine gueltige Antwort (HTTP " +
+        "Der Konfigurator-Service lieferte keine gültige Antwort (HTTP " +
           response.status +
           ").",
       );
@@ -105,8 +105,8 @@
     reviewButton.disabled = !allFinished || submitting;
     confirmButton.disabled = !allFinished || confirmed || submitting;
     confirmButton.textContent = confirmed
-      ? "Zusammenstellung bestaetigt"
-      : "Konfiguration bestaetigen";
+      ? "Zusammenstellung bestätigt"
+      : "Konfiguration bestätigen";
     submitButton.disabled = !confirmed || !allReady || submitting;
     submitButton.setAttribute("aria-busy", submitting ? "true" : "false");
     overallStatus.textContent = cuts.length
@@ -244,7 +244,7 @@
     });
     if (!response.ok)
       throw new Error(
-        "Storefront-Pruefung fehlgeschlagen (HTTP " + response.status + ").",
+        "Storefront-Prüfung fehlgeschlagen (HTTP " + response.status + ").",
       );
     var html = new DOMParser().parseFromString(
       await response.text(),
@@ -258,7 +258,7 @@
     var status = JSON.parse(statusElement.textContent);
     if (status.currency !== prepared.currency) {
       throw new Error(
-        "Der Konfigurator unterstuetzt aktuell nur die Shop-Waehrung " +
+        "Der Konfigurator unterstützt aktuell nur die Shop-Währung " +
           prepared.currency +
           ".",
       );
@@ -266,7 +266,7 @@
     if (String(status.id) !== numericId || !status.available) return false;
     if (status.price !== prepared.unitPriceCents) {
       throw new Error(
-        "Der Storefront-Preis weicht vom bestaetigten Konfigurationspreis ab. Bitte den Shop kontaktieren.",
+        "Der Storefront-Preis weicht vom bestätigten Konfigurationspreis ab. Bitte den Shop kontaktieren.",
       );
     }
     return true;
@@ -359,7 +359,7 @@
       }
       if (current())
         throw new Error(
-          "Shopify benoetigt noch Zeit. Bitte erneut versuchen; eine bereits erstellte Variante wird wiederverwendet.",
+          "Shopify benötigt noch Zeit. Bitte erneut versuchen; eine bereits erstellte Variante wird wiederverwendet.",
         );
     } catch (error) {
       if (!current()) return;
@@ -467,7 +467,7 @@
       label.textContent = position.label;
       var empty = document.createElement("option");
       empty.value = "";
-      empty.textContent = position.required ? "Bitte waehlen" : defaultSelectionLabel(position);
+      empty.textContent = position.required ? "Bitte wählen" : defaultSelectionLabel(position);
       select.appendChild(empty);
       position.options.forEach(function (entry) {
         var option = document.createElement("option");
@@ -559,7 +559,7 @@
       showError(
         error instanceof Error
           ? error.message
-          : "Die Zuschnitte konnten nicht hinzugefuegt werden.",
+          : "Die Zuschnitte konnten nicht hinzugefügt werden.",
       );
       submitting = false;
       render();
@@ -594,7 +594,7 @@
                 });
             })
           ) {
-            throw new Error("Ungueltige gespeicherte Zuschnitte.");
+            throw new Error("Ungültige gespeicherte Zuschnitte.");
           }
         }
       } catch (error) {

@@ -124,7 +124,7 @@ export async function prepareConfiguration(
     selection.quantity !== input.quantity
   ) {
     throw new ConfigurationInputError(
-      "Die Konfiguration hat sich geaendert. Bitte erneut fertigstellen.",
+      "Die Konfiguration hat sich geändert. Bitte erneut fertigstellen.",
     );
   }
   const leaseUntil = new Date(Date.now() + 120_000);
@@ -280,7 +280,7 @@ export async function getConfigurationStatus(
   );
   if (!result.ok)
     throw new Error(
-      `Verfuegbarkeit konnte nicht geprueft werden: ${result.errors.join(" | ")}`,
+      `Verfügbarkeit konnte nicht geprüft werden: ${result.errors.join(" | ")}`,
     );
   const variant = result.data.productVariant;
   const snapshot: ConfigurationSnapshot = JSON.parse(record.snapshot);
@@ -298,7 +298,7 @@ export async function getConfigurationStatus(
     Math.abs(weight.value - snapshot.unitWeightKilograms) > 0.000001
   )
     throw new Error(
-      "Die Konfigurationsvariante wurde geloescht oder nachtraeglich geaendert. Bitte den Shop kontaktieren.",
+      "Die Konfigurationsvariante wurde gelöscht oder nachträglich geändert. Bitte den Shop kontaktieren.",
     );
   const status =
     variant.availableForSale &&

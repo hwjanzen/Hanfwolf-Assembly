@@ -5,7 +5,6 @@
   function contextFor(trigger, root) {
     var lines = [
       "Sortiment: " + (root.dataset.inquiryAssortment || "Nicht zugeordnet"),
-      "Seite: " + window.location.href,
     ];
     if (root.dataset.inquiryProduct) lines.push("Produkt: " + root.dataset.inquiryProduct);
     var cut = trigger.closest(".rope-cut");

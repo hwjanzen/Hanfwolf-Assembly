@@ -9,7 +9,8 @@
     --collection-filter-width: 14rem;
     --collection-filter-height: 5.4rem;
     position: relative;
-    z-index: 20;
+    /* Keep filter popups above products but below Dawn's header (z-index: 3). */
+    z-index: 2;
     }
 
     .facets-container details[id^='Details-filter.v'],

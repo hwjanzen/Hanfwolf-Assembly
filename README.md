@@ -111,6 +111,11 @@ explicitly pass a fallback image. No product data or images are copied in Shopif
 
 ### Storefront finishing pass (HW20261021)
 
+Upload [collection filter styles](assets/component-collection-filters.css) to
+keep the desktop filter stacking context below the header and its search
+suggestions. Filter popups retain their local stacking order above products;
+the mobile filter drawer is unchanged.
+
 Upload [hanfwolf-storefront-polish.css](assets/hanfwolf-storefront-polish.css)
 and the updated [header](sections/header.liquid), which loads it once.
 Also update [header design](assets/hanfwolf-header-design.css),
@@ -215,6 +220,14 @@ search/drawer remain managed by Dawn. Mobile retains the configured logo positio
 Only these theme files need uploading; no app deployment/reinstall is required.
 
 ### Configurator charcoal/silver design
+
+German UI labels and validation messages in the configurator, pricing scripts
+and app use native umlauts. Deploy the app update for these text corrections;
+technical identifiers, metafield keys and configuration data remain unchanged.
+Theme-editor text corrections also require uploading
+[header.liquid](sections/header.liquid) and
+[hanfwolf-home-collections.liquid](sections/hanfwolf-home-collections.liquid)
+to the active theme; the app deployment does not update theme files.
 
 The `HW20261025` live preview adds illustrative end_1/material/end_2 tiles per
 cut: horizontal on desktop, vertical below 750px. Component variant images take

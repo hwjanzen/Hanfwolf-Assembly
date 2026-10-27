@@ -216,7 +216,7 @@ describe("configuration preparation", () => {
       configurationId: id,
       quantity: 3,
     });
-    await expect(prepare()).rejects.toThrow("geaendert");
+    await expect(prepare()).rejects.toThrow("geändert");
     expect(mocks.graphql).not.toHaveBeenCalled();
     expect(mocks.configuration.updateMany).not.toHaveBeenCalled();
   });
@@ -254,7 +254,7 @@ describe("configuration preparation", () => {
         data: { productVariant: changed },
       });
       await expect(getConfigurationStatus({}, record.shop, id)).rejects.toThrow(
-        "geaendert",
+        "geändert",
       );
     }
   });

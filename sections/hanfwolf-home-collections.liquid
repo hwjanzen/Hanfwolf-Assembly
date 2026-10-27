@@ -12,7 +12,7 @@
           <h3>{{ selected_collection.title | escape }}</h3>
           <a class="button" href="{{ selected_collection.url }}">{{ block.settings.link_label | escape }}</a>
         {%- elsif request.design_mode -%}
-          <p>Bitte eine Collection in den Block-Einstellungen auswaehlen.</p>
+          <p>Bitte eine Collection in den Block-Einstellungen auswählen.</p>
         {%- endif -%}
       </div>
     {%- endfor -%}
@@ -29,7 +29,7 @@
   "name": "HANFWOLF Seil-Auswahl",
   "enabled_on": { "templates": ["index"] },
   "settings": [
-    { "type": "text", "id": "heading", "label": "Ueberschrift", "default": "Unsere Seile" }
+    { "type": "text", "id": "heading", "label": "Überschrift", "default": "Unsere Seile" }
   ],
   "blocks": [
     {

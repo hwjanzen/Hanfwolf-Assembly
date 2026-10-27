@@ -9,6 +9,31 @@ const template = readFileSync(
 );
 
 describe("rope preview layout", () => {
+  it("renders confirmation buttons with German umlauts", () => {
+    const renderFunction = script.slice(
+      script.indexOf("  function render()"),
+      script.indexOf("  function renderSummary()"),
+    );
+    const confirmButton = { disabled: false, textContent: "" };
+    const context = {
+      cuts: [],
+      setup: {},
+      submitting: false,
+      confirmed: false,
+      addButton: {},
+      reviewButton: {},
+      confirmButton,
+      submitButton: { setAttribute() {} },
+      overallStatus: {},
+      review: { hidden: true },
+    };
+    runInNewContext(renderFunction + "\nrender();", context);
+    expect(confirmButton.textContent).toBe("Konfiguration bestätigen");
+    context.confirmed = true;
+    runInNewContext(renderFunction + "\nrender();", context);
+    expect(confirmButton.textContent).toBe("Zusammenstellung bestätigt");
+  });
+
   it("keeps both input fieldsets inside the shared lock and before separate previews", () => {
     const inputs = template.indexOf("data-rope-inputs");
     const quantity = template.indexOf("data-rope-quantity", inputs);

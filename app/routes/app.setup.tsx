@@ -100,7 +100,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       !ropeProductType
     ) {
       throw new Error(
-        "Seil-Produkttyp: Der ausgewaehlte Produkttyp ist nicht mehr verfuegbar. Bitte die Seite neu laden.",
+        "Seil-Produkttyp: Der ausgewählte Produkttyp ist nicht mehr verfügbar. Bitte die Seite neu laden.",
       );
     }
 

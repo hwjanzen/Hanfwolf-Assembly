@@ -164,7 +164,7 @@
         !cutId || ids.has(cutId) ||
         item.properties._hanfwolf_quantity_unit !== "piece" ||
         !item.properties._hanfwolf_configuration_id
-      ) throw new Error("Ungueltiger vorbereiteter Zuschnitt.");
+      ) throw new Error("Ungültiger vorbereiteter Zuschnitt.");
       ids.add(cutId);
     });
     // Reconcile stable cut IDs before retrying a request with an uncertain outcome.
@@ -172,7 +172,7 @@
       credentials: "same-origin", cache: "no-store", headers: { Accept: "application/json" },
       signal: AbortSignal.timeout(15000),
     });
-    if (!Array.isArray(cart.items)) throw new Error("Der Warenkorb lieferte keine gueltige Positionsliste.");
+    if (!Array.isArray(cart.items)) throw new Error("Der Warenkorb lieferte keine gültige Positionsliste.");
     var missing = items.filter(function (item) {
       var existing = (cart.items || []).filter(function (line) {
         return line.properties && line.properties._hanfwolf_rope_cut_id === item.properties._hanfwolf_rope_cut_id;
@@ -182,7 +182,7 @@
         existing.length !== 1 || existing[0].quantity !== item.quantity ||
         String(existing[0].variant_id) !== item.variantId.split("/").pop() ||
         existing[0].properties._hanfwolf_configuration_id !== item.properties._hanfwolf_configuration_id
-      ) throw new Error("Ein Zuschnitt ist bereits mit anderer Menge im Warenkorb. Bitte den Warenkorb pruefen.");
+      ) throw new Error("Ein Zuschnitt ist bereits mit anderer Menge im Warenkorb. Bitte den Warenkorb prüfen.");
       return false;
     });
     if (!missing.length) return cart;
@@ -196,10 +196,10 @@
     });
     var payload = await response.json();
     if (!response.ok || payload.status >= 400) {
-      throw new Error(payload.description || payload.message || "Shopify konnte die Zuschnitte nicht hinzufuegen. Bitte den Warenkorb pruefen.");
+      throw new Error(payload.description || payload.message || "Shopify konnte die Zuschnitte nicht hinzufügen. Bitte den Warenkorb prüfen.");
     }
     if (!Array.isArray(payload.items) || payload.items.length !== missing.length) {
-      throw new Error("Shopify hat die Uebernahme nicht eindeutig bestaetigt. Bitte erneut versuchen oder den Warenkorb pruefen.");
+      throw new Error("Shopify hat die Übernahme nicht eindeutig bestätigt. Bitte erneut versuchen oder den Warenkorb prüfen.");
     }
     return payload;
   }

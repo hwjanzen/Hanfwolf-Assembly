@@ -57,7 +57,7 @@ facet-filters-form .facets__summary > div {
 
 .facets-container .facets__summary-label,
 facet-filters-form .facets__summary-label {
-  overflow-wrap: anywhere;
+  white-space: nowrap;
 }
 
 .facets-container summary.mobile-facets__summary {
@@ -341,7 +341,7 @@ facet-filters-form .mobile-facets__open:hover {
   .facets-container .facets__wrapper,
   facet-filters-form .facets__wrapper {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 21rem), 1fr));
     /* HW20261021: Keep wrapped tablet rows at the same button height too. */
     grid-auto-rows: 1fr;
     gap: 1rem;
@@ -377,12 +377,5 @@ facet-filters-form .mobile-facets__open:hover {
   facet-filters-form .facets__list {
     max-height: 32rem;
     overflow-y: auto;
-  }
-}
-
-@media screen and (min-width: 990px) {
-  .facets-container .facets__wrapper,
-  facet-filters-form .facets__wrapper {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
   }
 }

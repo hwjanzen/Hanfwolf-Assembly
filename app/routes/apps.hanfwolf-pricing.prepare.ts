@@ -41,7 +41,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     try {
       body = await request.json();
     } catch {
-      throw new ConfigurationInputError("Ungueltige JSON-Anfrage.");
+      throw new ConfigurationInputError("Ungültige JSON-Anfrage.");
     }
     const input = normalizeConfigurationInput(body, config);
     const url = new URL(request.url);
@@ -73,7 +73,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       );
     const id = new URL(request.url).searchParams.get("id") || "";
     if (!/^[a-f0-9]{64}$/.test(id))
-      throw new ConfigurationInputError("Ungueltige Konfigurations-ID.");
+      throw new ConfigurationInputError("Ungültige Konfigurations-ID.");
     return Response.json(
       await getConfigurationStatus(admin, session.shop, id),
       { headers: { "Cache-Control": "no-store" } },

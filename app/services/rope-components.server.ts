@@ -110,7 +110,7 @@ function referenceNodes(list: ReferenceList, label: string) {
     ids.length !== list.references.nodes.length
   ) {
     throw new Error(
-      `${label}: unvollstaendige Referenzen oder mehr als 100 Eintraege.`,
+      `${label}: unvollständige Referenzen oder mehr als 100 Einträge.`,
     );
   }
   return list.references.nodes;
@@ -139,13 +139,13 @@ export async function loadConfigurationProduct(
   }
   if (product.status !== "ACTIVE" || !product.publishedAt) {
     throw new ConfigurationInputError(
-      "Der Basisartikel muss im Onlineshop veroeffentlicht sein.",
+      "Der Basisartikel muss im Onlineshop veröffentlicht sein.",
     );
   }
   const { positionDefinition, mappingDefinition } = result.data;
   if (!positionDefinition || !mappingDefinition) {
     throw new ConfigurationInputError(
-      "Die App-Definitionen fuer Konfigurationspositionen oder Komponentenfreigaben fehlen. Bitte die App-Konfiguration deployen.",
+      "Die App-Definitionen für Konfigurationspositionen oder Komponentenfreigaben fehlen. Bitte die App-Konfiguration deployen.",
     );
   }
   // All candidates must be considered; a later page can contain the marked master.
@@ -196,7 +196,7 @@ export async function loadConfigurationProduct(
       );
     }
     if (!data.label || data.label.startsWith("_") || data.label.length > 80) {
-      issues.push("Bezeichnung fehlt oder ist ungueltig");
+      issues.push("Bezeichnung fehlt oder ist ungültig");
     }
     if (data.code && codes.has(data.code)) issues.push("Code ist doppelt");
     if (data.label && labels.has(data.label))
@@ -258,7 +258,7 @@ export async function loadConfigurationProduct(
       !Number.isSafeInteger(Number(entry.sort_order))
     )
       throw new Error(
-        "Eine Komponentenfreigabe ist ungueltig oder gehoert nicht zum Basisartikel.",
+        "Eine Komponentenfreigabe ist ungültig oder gehört nicht zum Basisartikel.",
       );
   }
   type Component = {
@@ -294,7 +294,7 @@ export async function loadConfigurationProduct(
     const variant = variants.get(entry.component!);
     if (!variant || variant.product.status !== "ACTIVE")
       throw new Error(
-        `Komponente fuer ${entry.label} fehlt oder ist nicht aktiv.`,
+        `Komponente für ${entry.label} fehlt oder ist nicht aktiv.`,
       );
     priceCents(variant.price);
     const weight = variant.inventoryItem.measurement.weight;
@@ -302,7 +302,7 @@ export async function loadConfigurationProduct(
       variant.inventoryItem.requiresShipping &&
       (!weight || weight.value <= 0)
     ) {
-      throw new Error(`Versandgewicht fuer ${variant.product.title} fehlt.`);
+      throw new Error(`Versandgewicht für ${variant.product.title} fehlt.`);
     }
     return {
       id: entry.id,
@@ -321,7 +321,7 @@ export async function loadConfigurationProduct(
       !mappings.some((entry) => entry.positionId === position.id)
     ) {
       throw new ConfigurationInputError(
-        `Fuer ${position.label} fehlt eine aktive Komponentenfreigabe.`,
+        `Für ${position.label} fehlt eine aktive Komponentenfreigabe.`,
       );
     }
   }

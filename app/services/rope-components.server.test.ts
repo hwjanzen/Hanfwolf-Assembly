@@ -257,7 +257,7 @@ describe("explicit component mappings", () => {
     graphql.mockResolvedValueOnce({ ok: true, data });
     await expect(
       loadConfigurationProduct({}, gid("Product", 1), DEFAULT_ROPE_CONFIG),
-    ).rejects.toThrow("unvollstaendige");
+    ).rejects.toThrow("unvollständige");
     const invalid = component();
     invalid.inventoryItem.measurement.weight.value = 0;
     graphql

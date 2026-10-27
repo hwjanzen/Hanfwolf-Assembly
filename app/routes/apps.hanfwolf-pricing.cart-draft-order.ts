@@ -446,7 +446,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       }
       if (Number(cartVariant.price).toFixed(2) !== configuration.unitPrice) {
         return Response.json(
-          { ok: false, error: "Der Preis der Zuschnitt-Variante stimmt nicht mit ihrer Konfiguration ueberein." },
+          { ok: false, error: "Der Preis der Zuschnitt-Variante stimmt nicht mit ihrer Konfiguration überein." },
           { status: 400 },
         );
       }

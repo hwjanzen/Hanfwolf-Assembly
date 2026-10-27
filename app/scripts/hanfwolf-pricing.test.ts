@@ -106,13 +106,13 @@ describe("configured cart batch", () => {
     const { fetch, api } = setup();
     await expect(
       api.addConfiguredCutsToCart([item(1), item(1)]),
-    ).rejects.toThrow();
+    ).rejects.toThrow("Ungültiger vorbereiteter Zuschnitt.");
     expect(fetch).not.toHaveBeenCalled();
     fetch
       .mockResolvedValueOnce(response({ items: [] }))
       .mockResolvedValueOnce(response({}));
     await expect(api.addConfiguredCutsToCart([item(1)])).rejects.toThrow(
-      "nicht eindeutig",
+      "Shopify hat die Übernahme nicht eindeutig bestätigt. Bitte erneut versuchen oder den Warenkorb prüfen.",
     );
   });
 

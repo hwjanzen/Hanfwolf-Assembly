@@ -144,7 +144,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   ) {
     return {
       ok: false,
-      error: "Bitte gueltige Eingaben uebergeben.",
+      error: "Bitte gültige Eingaben übergeben.",
       hints: {
         companyId:
           "Optional: gid://shopify/Company/<id>, nur <id>, oder Admin-URL mit /companies/<id>.",
@@ -154,7 +154,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
           "Optional für Produkte ohne Variant-Line: gid://shopify/Product/<id> oder nur <id>.",
         variantId:
           "Optional wenn productId vorhanden: gid://shopify/ProductVariant/<id>, nur <id>, oder URL mit /variants/<id>.",
-        quantity: "Muss groesser als 0 sein.",
+        quantity: "Muss größer als 0 sein.",
       },
       debug: {
         rawCompanyId,
@@ -555,9 +555,9 @@ export default function Index() {
         )}
       </s-section>
 
-      <s-section heading="Preis pruefen (MVP)">
+      <s-section heading="Preis prüfen (MVP)">
         <s-paragraph>
-          Diese Testmaske ermittelt den gueltigen Preis aus Company Price List
+          Diese Testmaske ermittelt den gültigen Preis aus Company Price List
           Header, Price List Lines und Variant-Fallback.
         </s-paragraph>
 
