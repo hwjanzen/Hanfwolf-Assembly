@@ -492,17 +492,25 @@ Es gibt keinen festen Haspelaufschlag.
    Versandgewichten pflegen. Versandfaehige Komponenten brauchen positives Gewicht.
    Eine kostenfreie Ring-Auswahl kann eine nicht versandfaehige 0-EUR-Komponente
    sein; bei einer optionalen Position fuegt **Ohne** weder Kosten noch Gewicht hinzu.
-5. Unter **Konfigurationsfreigabe** je erlaubter Kombination einen Eintrag anlegen:
-   Basisartikel + Konfigurationsposition + Komponentenvariante, dazu angezeigte
-   Bezeichnung, Komponentenmenge (1–999), Sortierung und Aktivstatus.
+5. Unter **Seilfreigaben** in der App Freigaben zentral als Liste verwalten.
+   Fuer viele Eintraege den CSV-Export als Vorlage verwenden. Pflichtspalten:
+   `mapping_id,product_id,position_code,component_variant_id,label,quantity,sort_order,active`.
+   Shopify-GIDs sind fuer Artikel, Varianten und vorhandene Freigaben erforderlich.
+   Erst **CSV pruefen** ausfuehren; Zeilenfehler muessen vor dem Uebernehmen
+   behoben werden. Leere `mapping_id` aktualisiert eine eindeutig vorhandene
+   Kombination oder legt sie neu an. Mit `mapping_id` kann ein Eintrag bearbeitet
+   oder einem anderen Seilartikel zugeordnet werden. Der Import ergaenzt bzw.
+   aktualisiert Metaobjekte und synchronisiert **Zulaessige Komponenten** am
+   jeweiligen Artikel. Nicht importierte Freigaben werden nicht geloescht.
    Beispiel: A / Endverbindung 1 / Kausche A und A / Endverbindung 1 / Kausche B;
    fuer Artikel B duerfen separat A und D freigegeben werden. Endverbindung 2
    benoetigt eigene Freigaben. Durchmesser wird nicht automatisch ausgewertet.
-6. Am Seilprodukt die beiden App-Metafelder **Konfigurationspositionen** und
-   **Zulaessige Komponenten** mit den passenden Eintraegen befuellen.
-   Nur dort referenzierte, aktive Freigaben werden angeboten. Fremde Basisartikel,
-   fehlende Referenzen und leere Pflichtauswahlen werden explizit abgelehnt.
-   Unterstuetzt sind 1–30 aktive Positionen und bis zu 100 Referenzen je Liste.
+6. Am Seilprodukt das App-Metafeld **Konfigurationspositionen** mit den passenden
+   Eintraegen befuellen. Die Liste **Zulaessige Komponenten** pflegt die App
+   nach einem erfolgreichen CSV-Import. Nur dort referenzierte, aktive
+   Freigaben werden angeboten. Fremde Basisartikel, fehlende Referenzen und
+   leere Pflichtauswahlen werden explizit abgelehnt. Unterstuetzt sind 1–30
+   aktive Positionen und bis zu 100 Referenzen je Liste.
 7. Genau eine Stammdatenvariante verwenden (bei mehreren Originalvarianten mit
    `$app.is_default_configuration = true` markieren). Preis/Gewicht je dm pflegen.
    Das Produkt muss aktiv und im Onlineshop veroeffentlicht sein; den erlaubten
@@ -514,6 +522,17 @@ Es gibt keinen festen Haspelaufschlag.
    und Express-Checkout-Buttons dort entfernen: Konfigurationsvarianten sind
    technische Varianten, keine vom Kunden waehlbaren Stammdaten.
    Die Status-Section braucht keinen sichtbaren Block in der Produktvorlage.
+
+Die App-Seite **Seilfreigaben** zeigt Metaobjekte fuer die konfigurierten
+Seilartikel mit Artikel, Position, Komponente, Anzeigebezeichnung, Menge,
+Sortierung, Aktivstatus und Produktzuordnung. Suche und Filter aendern nur die
+Ansicht. Der CSV-Export enthaelt `mapping_id` fuer gezielte Aktualisierungen;
+Importe werden vor dem Schreiben gegen Seilartikel, aktive Positionen,
+Varianten-IDs, Mengen, doppelte Kombinationen und Shopify-Referenzgrenzen
+geprueft. Ein Import synchronisiert sowohl die Metaobjekte als auch die
+Produktliste **Zulaessige Komponenten**. Bei Shopify-Teilfehlern meldet die App
+betroffene Zeilen bzw. Produktzuordnungen; erfolgreiche Aenderungen werden
+nicht stillschweigend zurueckgerollt.
 
 Bestehende dm-Warenkorbpositionen werden **nicht** automatisch in Stueckpositionen
 umgerechnet. Vor dem Umstieg alte Testwarenkoerbe leeren und neu konfigurieren.
