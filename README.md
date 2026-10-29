@@ -493,15 +493,28 @@ Es gibt keinen festen Haspelaufschlag.
    Eine kostenfreie Ring-Auswahl kann eine nicht versandfaehige 0-EUR-Komponente
    sein; bei einer optionalen Position fuegt **Ohne** weder Kosten noch Gewicht hinzu.
 5. Unter **Seilfreigaben** in der App Freigaben zentral als Liste verwalten.
-   Fuer viele Eintraege den CSV-Export als Vorlage verwenden. Pflichtspalten:
-   `mapping_id,product_id,position_code,component_variant_id,label,quantity,sort_order,active`.
-   Shopify-GIDs sind fuer Artikel, Varianten und vorhandene Freigaben erforderlich.
-   Erst **CSV pruefen** ausfuehren; Zeilenfehler muessen vor dem Uebernehmen
-   behoben werden. Leere `mapping_id` aktualisiert eine eindeutig vorhandene
-   Kombination oder legt sie neu an. Mit `mapping_id` kann ein Eintrag bearbeitet
-   oder einem anderen Seilartikel zugeordnet werden. Der Import ergaenzt bzw.
-   aktualisiert Metaobjekte und synchronisiert **Zulaessige Komponenten** am
-   jeweiligen Artikel. Nicht importierte Freigaben werden nicht geloescht.
+   Fuer viele Eintraege den CSV-Export als Vorlage verwenden. Die Datei
+   enthaelt lesbare Produkt-, Positions- und Varianteninformationen neben den
+   Shopify-IDs. Beim Import koennen `product_handle` statt `product_id` und eine
+   eindeutige `component_sku` statt `component_variant_id` verwendet werden.
+   `mapping_id` bleibt beim Bearbeiten der exportierten Zeile erhalten; bei
+   neuen Freigaben darf sie leer bleiben. Ohne ID werden eindeutige bestehende
+   Kombinationen anhand Artikel, Position und Variante aktualisiert, andernfalls
+   wird eine neue Freigabe angelegt. Pflichtspalten sind `mapping_id`,
+   `position_code`, `label`, `quantity`, `sort_order`, `active` sowie entweder
+   `product_id` oder `product_handle`/`product_title` und entweder
+   `component_variant_id` oder `component_sku`.
+   Weitere Info-Spalten aus dem Export duerfen unveraendert mitgefuehrt werden.
+   Fuer neue Zeilen koennen `product_handle` und `component_sku` statt IDs
+   verwendet werden; die SKU muss eine einzelne Variante eindeutig bestimmen.
+   Produkt-/Varianten-IDs aus dem Export koennen alternativ unveraendert
+   mitgefuehrt werden. Erst **CSV pruefen** ausfuehren; Zeilenfehler muessen vor
+   dem Uebernehmen behoben werden. Leere `mapping_id` aktualisiert eine eindeutig
+   vorhandene Kombination oder legt sie neu an. Mit `mapping_id` kann ein
+   Eintrag bearbeitet oder einem anderen Seilartikel zugeordnet werden. Der
+   Import ergaenzt bzw. aktualisiert Metaobjekte und synchronisiert
+   **Zulaessige Komponenten** am jeweiligen Artikel. Nicht importierte
+   Freigaben werden nicht geloescht.
    Beispiel: A / Endverbindung 1 / Kausche A und A / Endverbindung 1 / Kausche B;
    fuer Artikel B duerfen separat A und D freigegeben werden. Endverbindung 2
    benoetigt eigene Freigaben. Durchmesser wird nicht automatisch ausgewertet.
@@ -534,6 +547,20 @@ geprueft. Ein Import synchronisiert sowohl die Metaobjekte als auch die
 Produktliste **Zulaessige Komponenten**. Bei Shopify-Teilfehlern meldet die App
 betroffene Zeilen bzw. Produktzuordnungen; erfolgreiche Aenderungen werden
 nicht stillschweigend zurueckgerollt.
+
+Fuer mehrere Artikel derselben Collection kann unter **Masterfreigaben auf
+Collection uebertragen** ein bereits konfiguriertes Seilprodukt als Master
+gewaehlt werden. Die Vorschau listet nur Seilartikel derselben Collection auf,
+die weder Freigaben noch Konfigurationspositionszuordnungen besitzen.
+Nach Bestaetigung legt die App fuer jedes Zielprodukt neue
+Konfigurationsfreigabe-Metaobjekte an und ersetzt darin ausschliesslich den
+Basisartikel durch das Zielprodukt; Positionen, Komponentenvarianten,
+Bezeichnungen, Mengen, Sortierung und Aktivstatus stammen vom Master.
+Zusaetzlich werden die Konfigurationspositionen und die neuen Freigabe-
+Referenzen am Zielprodukt gesetzt. Bereits konfigurierte Artikel sowie das
+Masterprodukt selbst bleiben unveraendert. Fehler werden pro Zielartikel
+angezeigt; nicht zugeordnete, beim fehlgeschlagenen Kopierversuch angelegte
+Metaobjekte werden nach Moeglichkeit wieder bereinigt.
 
 Bestehende dm-Warenkorbpositionen werden **nicht** automatisch in Stueckpositionen
 umgerechnet. Vor dem Umstieg alte Testwarenkoerbe leeren und neu konfigurieren.

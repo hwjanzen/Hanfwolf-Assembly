@@ -1,12 +1,14 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
-import { useFetcher, useLoaderData } from "react-router";
+import { useFetcher, useLoaderData, useRevalidator } from "react-router";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import { authenticate } from "../shopify.server";
 import { getRopeConfiguratorConfig } from "../services/rope-configurator-setup.server";
 import {
   importRopeReleaseCsv,
+  copyMasterReleasesToCollectionProducts,
   loadRopeReleases,
+  previewCollectionReleaseCopy,
   previewRopeReleaseImport,
   ropeReleasesToCsv,
 } from "../services/rope-releases.server";
@@ -29,10 +31,39 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
   try {
     const config = await getRopeConfiguratorConfig(session.shop);
+    if (intent === "preview-collection-copy") {
+      const collectionId = String(formData.get("collectionId") || "");
+      const masterProductId = String(formData.get("masterProductId") || "");
+      return {
+        ok: true as const,
+        intent: "preview-collection-copy" as const,
+        collectionId,
+        masterProductId,
+        preview: await previewCollectionReleaseCopy(
+          admin,
+          config,
+          collectionId,
+          masterProductId,
+        ),
+      };
+    }
+    if (intent === "copy-collection-releases") {
+      const result = await copyMasterReleasesToCollectionProducts(
+        admin,
+        config,
+        String(formData.get("collectionId") || ""),
+        String(formData.get("masterProductId") || ""),
+      );
+      return {
+        ok: result.failures.length === 0,
+        intent: "copy-collection-releases" as const,
+        ...result,
+      };
+    }
     if (intent === "preview") {
       return {
         ok: true as const,
-        intent,
+        intent: "preview" as const,
         preview: await previewRopeReleaseImport(admin, csv, config),
       };
     }
@@ -40,7 +71,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       const result = await importRopeReleaseCsv(admin, csv, config);
       return {
         ok: result.failures.length === 0,
-        intent,
+        intent: "import" as const,
         created: result.created,
         updated: result.updated,
         failures: result.failures,
@@ -48,34 +79,60 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     }
     return { ok: false as const, intent, message: "Unbekannte Aktion." };
   } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Die Freigaben konnten nicht verarbeitet werden.";
     console.error("Rope release management failed", {
       shop: session.shop,
       intent,
-      error: error instanceof Error ? error.message : String(error),
+      error: message,
     });
+    if (intent === "copy-collection-releases")
+      return {
+        ok: false as const,
+        intent: "copy-collection-releases" as const,
+        message,
+      };
+    if (intent === "preview-collection-copy")
+      return {
+        ok: false as const,
+        intent: "preview-collection-copy" as const,
+        collectionId: String(formData.get("collectionId") || ""),
+        masterProductId: String(formData.get("masterProductId") || ""),
+        message,
+      };
+    if (intent === "preview")
+      return { ok: false as const, intent: "preview" as const, message };
+    if (intent === "import")
+      return { ok: false as const, intent: "import" as const, message };
     return {
       ok: false as const,
       intent,
-      message:
-        error instanceof Error
-          ? error.message
-          : "Die Freigaben konnten nicht verarbeitet werden.",
+      message,
     };
   }
 };
 
-const CSV_TEMPLATE = `mapping_id,product_id,position_code,component_variant_id,label,quantity,sort_order,active
-,gid://shopify/Product/123456789,end_1,gid://shopify/ProductVariant/123456789,Kausche verzinkt,1,10,true`;
+const CSV_TEMPLATE = `mapping_id,product_title,product_handle,product_id,position_label,position_code,component_product_title,component_variant_title,component_sku,component_variant_id,label,quantity,sort_order,active
+,Seil A,seil-a,,Endverbindung 1,end_1,Kauschen,Kausche Edelstahl,K-100,,Kausche Edelstahl,1,10,true`;
 
 export default function RopeReleasesPage() {
-  const { releases, positions, exportCsv } = useLoaderData<typeof loader>();
+  const { releases, positions, exportCsv, collections } =
+    useLoaderData<typeof loader>();
   const previewFetcher = useFetcher<typeof action>();
   const importFetcher = useFetcher<typeof action>();
+  const collectionPreviewFetcher = useFetcher<typeof action>();
+  const collectionCopyFetcher = useFetcher<typeof action>();
   const shopify = useAppBridge();
+  const { revalidate } = useRevalidator();
+  const revalidatedCopyRef = useRef<unknown>(null);
   const [csv, setCsv] = useState("");
   const [search, setSearch] = useState("");
   const [positionFilter, setPositionFilter] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
+  const [collectionId, setCollectionId] = useState("");
+  const [masterProductId, setMasterProductId] = useState("");
   const preview =
     previewFetcher.data?.intent === "preview" && previewFetcher.data.ok
       ? previewFetcher.data.preview
@@ -93,7 +150,7 @@ export default function RopeReleasesPage() {
         "failures" in importFetcher.data
           ? (importFetcher.data.failures ?? []).map(
               (failure) =>
-                `${failure.line ? `Zeile ${failure.line}: ` : ""}${failure.message}`,
+                `${"line" in failure && failure.line ? `Zeile ${failure.line}: ` : ""}${failure.message}`,
             )
           : [];
       shopify.toast.show(
@@ -102,6 +159,24 @@ export default function RopeReleasesPage() {
       );
     }
   }, [importFetcher.data, importFetcher.state, shopify]);
+
+  useEffect(() => {
+    if (
+      collectionCopyFetcher.state === "idle" &&
+      collectionCopyFetcher.data?.intent === "copy-collection-releases" &&
+      "copiedProducts" in collectionCopyFetcher.data &&
+      collectionCopyFetcher.data !== revalidatedCopyRef.current
+    ) {
+      revalidatedCopyRef.current = collectionCopyFetcher.data;
+      collectionPreviewFetcher.reset();
+      revalidate();
+    }
+  }, [
+    collectionCopyFetcher.data,
+    collectionCopyFetcher.state,
+    collectionPreviewFetcher,
+    revalidate,
+  ]);
 
   const visibleReleases = useMemo(() => {
     const query = search.trim().toLocaleLowerCase("de");
@@ -142,6 +217,37 @@ export default function RopeReleasesPage() {
     "message" in importFetcher.data &&
     !importFetcher.data.ok
       ? importFetcher.data.message
+      : null;
+  const collectionPreview =
+    collectionPreviewFetcher.data?.intent === "preview-collection-copy" &&
+    collectionPreviewFetcher.data.ok &&
+    collectionPreviewFetcher.data.collectionId === collectionId &&
+    collectionPreviewFetcher.data.masterProductId === masterProductId
+      ? collectionPreviewFetcher.data.preview
+      : null;
+  const selectedCollection = collections.find(
+    (collection) => collection.id === collectionId,
+  );
+  const masterProducts =
+    selectedCollection?.products.filter(
+      (product) => product.releaseCount > 0,
+    ) ?? [];
+  const collectionPreviewError =
+    collectionPreviewFetcher.data?.intent === "preview-collection-copy" &&
+    !collectionPreviewFetcher.data.ok &&
+    collectionPreviewFetcher.data.collectionId === collectionId &&
+    collectionPreviewFetcher.data.masterProductId === masterProductId
+      ? collectionPreviewFetcher.data.message
+      : null;
+  const collectionCopyResult =
+    collectionCopyFetcher.data?.intent === "copy-collection-releases" &&
+    "copiedProducts" in collectionCopyFetcher.data
+      ? collectionCopyFetcher.data
+      : null;
+  const collectionCopyError =
+    collectionCopyFetcher.data?.intent === "copy-collection-releases" &&
+    "message" in collectionCopyFetcher.data
+      ? collectionCopyFetcher.data.message
       : null;
 
   const downloadCsv = () => {
@@ -322,11 +428,15 @@ export default function RopeReleasesPage() {
       <s-section heading="CSV-Import">
         <s-stack direction="block" gap="base">
           <s-paragraph>
-            Verwenden Sie die Shopify-GIDs aus dem Export. Eine leere mapping_id
-            legt eine neue Freigabe an oder aktualisiert eine eindeutig passende
-            bestehende Kombination. Mit mapping_id können bestehende Einträge
-            auch geändert oder einem anderen Seilartikel zugeordnet werden. Der
-            Import löscht keine nicht enthaltenen Freigaben.
+            Der Export enthält neben den technischen IDs auch lesbare Artikel-,
+            Positions- und Variantenangaben. Diese Info-Spalten helfen beim
+            Bearbeiten und können unverändert bleiben. Für neue Freigaben können
+            Sie product_handle und component_sku verwenden und product_id sowie
+            component_variant_id leer lassen; die SKU muss eindeutig sein. Eine
+            leere mapping_id legt eine neue Freigabe an oder aktualisiert eine
+            eindeutig passende Kombination. Zum Bearbeiten einer bestehenden
+            Freigabe die exportierte mapping_id in derselben Zeile stehen
+            lassen. Der Import löscht keine nicht enthaltenen Freigaben.
           </s-paragraph>
           <details>
             <summary>CSV-Spalten und Beispiel anzeigen</summary>
@@ -377,7 +487,7 @@ export default function RopeReleasesPage() {
                       <th>Zeile</th>
                       <th>Artikel</th>
                       <th>Position</th>
-                      <th>Komponentenvariante</th>
+                      <th>Komponente</th>
                       <th>Anzeige</th>
                       <th>Ergebnis</th>
                     </tr>
@@ -388,7 +498,9 @@ export default function RopeReleasesPage() {
                         <td>{row.line}</td>
                         <td>{row.productTitle}</td>
                         <td>{row.positionCode}</td>
-                        <td>{row.componentVariantId}</td>
+                        <td>
+                          {row.componentDescription || "Variante erkannt"}
+                        </td>
                         <td>{row.label}</td>
                         <td>{row.message}</td>
                       </tr>
@@ -430,11 +542,173 @@ export default function RopeReleasesPage() {
               {importFetcher.data &&
                 "failures" in importFetcher.data &&
                 (importFetcher.data.failures ?? []).map((failure, index) => (
-                  <s-paragraph key={`${failure.line}-${index}`}>
-                    {failure.line ? `Zeile ${failure.line}: ` : ""}
+                  <s-paragraph key={index}>
+                    {"line" in failure && failure.line
+                      ? `Zeile ${failure.line}: `
+                      : ""}
                     {failure.message}
                   </s-paragraph>
                 ))}
+            </s-banner>
+          )}
+        </s-stack>
+      </s-section>
+
+      <s-section heading="Masterfreigaben auf Collection übertragen">
+        <s-stack direction="block" gap="base">
+          <s-paragraph>
+            Wählen Sie das Masterprodukt einer Collection. Seine
+            Konfigurationsfreigaben und Konfigurationspositionen werden für
+            Seilartikel in derselben Collection neu angelegt, sofern diese noch
+            keine Konfiguration haben. Artikel mit vorhandenen Freigaben oder
+            Positionszuordnungen werden nicht verändert.
+          </s-paragraph>
+          <collectionPreviewFetcher.Form method="post">
+            <input
+              type="hidden"
+              name="intent"
+              value="preview-collection-copy"
+            />
+            <s-stack direction="block" gap="base">
+              <label>
+                Collection{" "}
+                <select
+                  name="collectionId"
+                  value={collectionId}
+                  onChange={(event) => {
+                    setCollectionId(event.currentTarget.value);
+                    setMasterProductId("");
+                    collectionPreviewFetcher.reset();
+                    collectionCopyFetcher.reset();
+                  }}
+                  required
+                >
+                  <option value="">Collection auswählen</option>
+                  {collections.map((collection) => (
+                    <option key={collection.id} value={collection.id}>
+                      {collection.title}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                Masterprodukt{" "}
+                <select
+                  name="masterProductId"
+                  value={masterProductId}
+                  onChange={(event) => {
+                    setMasterProductId(event.currentTarget.value);
+                    collectionPreviewFetcher.reset();
+                    collectionCopyFetcher.reset();
+                  }}
+                  required
+                  disabled={!masterProducts.length}
+                >
+                  <option value="">Masterprodukt auswählen</option>
+                  {masterProducts.map((product) => (
+                    <option key={product.id} value={product.id}>
+                      {product.title} ({product.releaseCount} Freigaben)
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <s-button
+                type="submit"
+                loading={collectionPreviewFetcher.state !== "idle"}
+                disabled={
+                  collectionPreviewFetcher.state !== "idle" ||
+                  collectionCopyFetcher.state !== "idle" ||
+                  !collectionId ||
+                  !masterProductId
+                }
+              >
+                Zielartikel anzeigen
+              </s-button>
+            </s-stack>
+          </collectionPreviewFetcher.Form>
+          {!masterProducts.length && collectionId && (
+            <s-paragraph>
+              In dieser Collection ist kein Seilprodukt mit Freigaben als Master
+              verfügbar.
+            </s-paragraph>
+          )}
+          {collectionPreviewError && (
+            <s-banner
+              heading="Übertragung kann nicht vorbereitet werden"
+              tone="critical"
+            >
+              {collectionPreviewError}
+            </s-banner>
+          )}
+          {collectionPreview && (
+            <>
+              <s-banner heading="Übertragungsvorschau" tone="info">
+                Master: {collectionPreview.masterProductTitle}.{" "}
+                {collectionPreview.releaseCount} Freigaben pro Zielartikel.{" "}
+                {collectionPreview.targets.length} unkonfigurierte Artikel in{" "}
+                {collectionPreview.collectionTitle} werden bearbeitet.
+                Konfigurierte Artikel werden übersprungen.
+              </s-banner>
+              {collectionPreview.targets.length > 0 && (
+                <div style={{ maxHeight: "240px", overflowY: "auto" }}>
+                  <ul>
+                    {collectionPreview.targets.map((target) => (
+                      <li key={target.id}>
+                        {target.title} ({target.handle})
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              <collectionCopyFetcher.Form method="post">
+                <input
+                  type="hidden"
+                  name="intent"
+                  value="copy-collection-releases"
+                />
+                <input type="hidden" name="collectionId" value={collectionId} />
+                <input
+                  type="hidden"
+                  name="masterProductId"
+                  value={masterProductId}
+                />
+                <s-button
+                  type="submit"
+                  variant="primary"
+                  loading={collectionCopyFetcher.state !== "idle"}
+                  disabled={
+                    collectionCopyFetcher.state !== "idle" ||
+                    collectionPreviewFetcher.state !== "idle" ||
+                    !collectionPreview.targets.length
+                  }
+                >
+                  {collectionPreview.targets.length} Artikel übertragen
+                </s-button>
+              </collectionCopyFetcher.Form>
+            </>
+          )}
+          {collectionCopyResult && (
+            <s-banner
+              heading={
+                collectionCopyResult.ok
+                  ? "Übertragung abgeschlossen"
+                  : "Übertragung teilweise fehlgeschlagen"
+              }
+              tone={collectionCopyResult.ok ? "success" : "critical"}
+            >
+              {collectionCopyResult.copiedProducts} von{" "}
+              {collectionCopyResult.targetCount} Artikeln erhalten{" "}
+              {collectionCopyResult.copiedReleases} neue Freigaben.
+              {collectionCopyResult.failures.map((failure) => (
+                <s-paragraph key={failure.productTitle}>
+                  {failure.productTitle}: {failure.message}
+                </s-paragraph>
+              ))}
+            </s-banner>
+          )}
+          {collectionCopyError && (
+            <s-banner heading="Übertragung fehlgeschlagen" tone="critical">
+              {collectionCopyError}
             </s-banner>
           )}
         </s-stack>
