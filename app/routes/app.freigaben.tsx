@@ -8,12 +8,17 @@ import {
   importRopeReleaseCsv,
   loadRopeReleases,
   previewRopeReleaseImport,
+  ropeReleasesToCsv,
 } from "../services/rope-releases.server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { admin, session } = await authenticate.admin(request);
   const config = await getRopeConfiguratorConfig(session.shop);
-  return loadRopeReleases(admin, config);
+  const board = await loadRopeReleases(admin, config);
+  return {
+    ...board,
+    exportCsv: ropeReleasesToCsv(board.releases),
+  };
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
@@ -63,7 +68,7 @@ const CSV_TEMPLATE = `mapping_id,product_id,position_code,component_variant_id,l
 ,gid://shopify/Product/123456789,end_1,gid://shopify/ProductVariant/123456789,Kausche verzinkt,1,10,true`;
 
 export default function RopeReleasesPage() {
-  const { releases, positions } = useLoaderData<typeof loader>();
+  const { releases, positions, exportCsv } = useLoaderData<typeof loader>();
   const previewFetcher = useFetcher<typeof action>();
   const importFetcher = useFetcher<typeof action>();
   const shopify = useAppBridge();
@@ -139,6 +144,19 @@ export default function RopeReleasesPage() {
       ? importFetcher.data.message
       : null;
 
+  const downloadCsv = () => {
+    const url = URL.createObjectURL(
+      new Blob(["\uFEFF", exportCsv], { type: "text/csv;charset=utf-8" }),
+    );
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "seilfreigaben.csv";
+    document.body.append(link);
+    link.click();
+    link.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+
   return (
     <s-page heading="Seilfreigaben" inlineSize="large">
       <s-section heading={`Freigaben (${releases.length})`}>
@@ -186,7 +204,9 @@ export default function RopeReleasesPage() {
                 <option value="inactive">Inaktiv</option>
               </select>
             </label>
-            <a href="/app/freigaben/export">CSV exportieren</a>
+            <button type="button" onClick={downloadCsv}>
+              CSV exportieren
+            </button>
           </s-stack>
           <div style={{ overflowX: "auto" }}>
             <table style={{ borderCollapse: "collapse", width: "100%" }}>

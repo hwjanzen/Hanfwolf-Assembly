@@ -526,7 +526,8 @@ Es gibt keinen festen Haspelaufschlag.
 Die App-Seite **Seilfreigaben** zeigt Metaobjekte fuer die konfigurierten
 Seilartikel mit Artikel, Position, Komponente, Anzeigebezeichnung, Menge,
 Sortierung, Aktivstatus und Produktzuordnung. Suche und Filter aendern nur die
-Ansicht. Der CSV-Export enthaelt `mapping_id` fuer gezielte Aktualisierungen;
+Ansicht. Der CSV-Export startet einen Browser-Download und enthaelt `mapping_id`
+fuer gezielte Aktualisierungen;
 Importe werden vor dem Schreiben gegen Seilartikel, aktive Positionen,
 Varianten-IDs, Mengen, doppelte Kombinationen und Shopify-Referenzgrenzen
 geprueft. Ein Import synchronisiert sowohl die Metaobjekte als auch die
