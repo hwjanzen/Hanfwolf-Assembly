@@ -1,6 +1,9 @@
 {{ 'template-collection.css' | asset_url | stylesheet_tag }}
 {{ 'component-card.css' | asset_url | stylesheet_tag }}
 {{ 'component-price.css' | asset_url | stylesheet_tag }}
+{%- if section.settings.show_technical_attributes -%}
+  {{ 'product-card-attributes.css' | asset_url | stylesheet_tag }}
+{%- endif -%}
 
 {% if section.settings.image_shape == 'blob' %}
   {{ 'mask-blobs.css' | asset_url | stylesheet_tag }}
@@ -181,6 +184,10 @@
                       show_secondary_image: section.settings.show_secondary_image,
                       show_vendor: section.settings.show_vendor,
                       show_rating: section.settings.show_rating,
+                      show_technical_attributes: section.settings.show_technical_attributes,
+                      diameter_icon: section.settings.diameter_icon,
+                      lay_icon: section.settings.lay_icon,
+                      surface_icon: section.settings.surface_icon,
                       lazy_load: lazy_load,
                       skip_styles: skip_card_product_styles,
                       quick_add: section.settings.quick_add,
@@ -333,6 +340,35 @@
       "id": "show_secondary_image",
       "default": false,
       "label": "t:sections.main-collection-product-grid.settings.show_secondary_image.label"
+    },
+    {
+      "type": "header",
+      "content": "Technische Merkmale im Produktbild"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_technical_attributes",
+      "default": true,
+      "label": "Durchmesser, Schlagart und Oberfläche anzeigen",
+      "info": "Oben rechts im Bild. Fehlende Produktwerte werden ausgeblendet. Für schmale Karten eine mobile Spalte wählen."
+    },
+    {
+      "type": "image_picker",
+      "id": "diameter_icon",
+      "label": "Icon Durchmesser",
+      "info": "Gilt für alle Durchmesserwerte. Ohne Icon wird nur der Wert angezeigt."
+    },
+    {
+      "type": "image_picker",
+      "id": "lay_icon",
+      "label": "Icon Schlagart",
+      "info": "Gilt für alle Schlagarten. Ohne Icon wird nur der Wert angezeigt."
+    },
+    {
+      "type": "image_picker",
+      "id": "surface_icon",
+      "label": "Icon Oberfläche",
+      "info": "Gilt für alle Oberflächen. Transparente, quadratische Icons ohne eigenen Kreis verwenden."
     },
     {
       "type": "checkbox",

@@ -1,0 +1,63 @@
+.hanfwolf-product-card .card__inner:has(> .product-card-attributes) {
+  container-type: inline-size;
+}
+
+.hanfwolf-product-card .product-card-attributes {
+  position: absolute;
+  z-index: 2;
+  top: 4%;
+  right: 4%;
+  box-sizing: border-box;
+  width: 46%;
+  margin: 0;
+  padding: clamp(3px, 2cqi, 10px);
+  display: grid;
+  gap: clamp(3px, 1.8cqi, 10px);
+  border-radius: 6px;
+  background: rgb(15 18 20 / 82%);
+  color: #fff;
+  pointer-events: none;
+  font-size: clamp(12px, 4cqi, 16px);
+  line-height: 1.25;
+  letter-spacing: 0;
+}
+
+.product-card-attributes__row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(2px, 1.5cqi, 8px);
+}
+
+.product-card-attributes__row--text-only {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.product-card-attributes__row--text-only .product-card-attributes__label {
+  position: absolute;
+}
+
+.product-card-attributes__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: clamp(20px, 9cqi, 36px);
+  aspect-ratio: 1;
+  border: 2px solid #599c59;
+  border-radius: 50%;
+}
+
+.product-card-attributes__icon img {
+  display: block;
+  width: 65%;
+  height: 65%;
+  object-fit: contain;
+}
+
+.product-card-attributes__value {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+  text-align: left;
+}

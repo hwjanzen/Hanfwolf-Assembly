@@ -8,6 +8,10 @@
   @param {boolean} [show_secondary_image] - Whether to show the second product image on hover. Defaults to `false`.
   @param {boolean} [show_vendor] - Whether to show the product vendor. Defaults to `false`.
   @param {boolean} [show_rating] - Whether to show the product rating. Defaults to `false`.
+  @param {boolean} [show_technical_attributes] - Whether to overlay product attributes on the image. Defaults to `false`.
+  @param {image} [diameter_icon] - Shared diameter icon, independent of the product value.
+  @param {image} [lay_icon] - Shared lay icon, independent of the product value.
+  @param {image} [surface_icon] - Shared surface icon, independent of the product value.
   @param {boolean} [extend_height] - Whether the card fills its available container space. Defaults to `false`.
   @param {boolean} [lazy_load] - Whether to lazy-load product images. Defaults to `true`.
   @param {boolean} [skip_styles] - Whether to omit the component styles. Defaults to `false`.
@@ -147,6 +151,14 @@
                 {%- endif -%}
               </div>
             </div>
+            {%- if show_technical_attributes -%}
+              {% render 'product-card-attributes',
+                card_product: card_product,
+                diameter_icon: diameter_icon,
+                lay_icon: lay_icon,
+                surface_icon: surface_icon
+              %}
+            {%- endif -%}
           {%- endif -%}
           <div class="card__content">
             <div class="card__information">

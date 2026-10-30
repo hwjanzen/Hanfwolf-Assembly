@@ -1,0 +1,58 @@
+{% doc %}
+  Renders product attribute values with independently selected property icons.
+
+  @param {product} card_product - Product whose referenced metaobjects supply the values.
+  @param {image} [diameter_icon] - Shared diameter icon.
+  @param {image} [lay_icon] - Shared lay icon.
+  @param {image} [surface_icon] - Shared surface icon.
+{% enddoc %}
+{%- capture attribute_rows -%}
+  {%- assign attribute_keys = 'durchmesser,schlagart,oberflaeche' | split: ',' -%}
+  {%- for attribute_key in attribute_keys -%}
+    {%- assign attribute_value = card_product.metafields.custom[attribute_key].value.value.value | strip -%}
+    {%- if attribute_value != blank -%}
+      {%- liquid
+        case attribute_key
+          when 'durchmesser'
+            assign attribute_label = 'Durchmesser'
+            assign attribute_icon = diameter_icon
+          when 'schlagart'
+            assign attribute_label = 'Schlagart'
+            assign attribute_icon = lay_icon
+          when 'oberflaeche'
+            assign attribute_label = 'Oberfläche'
+            assign attribute_icon = surface_icon
+        endcase
+      -%}
+      <div class="product-card-attributes__row{% if attribute_icon == blank %} product-card-attributes__row--text-only{% endif %}">
+        <dt class="product-card-attributes__label">
+          <span class="visually-hidden">{{ attribute_label }}</span>
+          {%- if attribute_icon != blank -%}
+            <span class="product-card-attributes__icon" aria-hidden="true">
+              {{
+                attribute_icon
+                | image_url: width: 96
+                | image_tag: widths: '48, 72, 96', sizes: '36px', loading: 'lazy', alt: ''
+              }}
+            </span>
+          {%- endif -%}
+        </dt>
+        <dd class="product-card-attributes__value">
+          {%- if attribute_key == 'durchmesser' -%}
+            {%- assign normalized_diameter = attribute_value | downcase -%}
+            {%- unless normalized_diameter contains 'ø' or normalized_diameter contains '⌀' -%}
+              &Oslash;&nbsp;
+            {%- endunless -%}
+            {{- attribute_value | escape -}}
+            {%- unless normalized_diameter contains 'mm' %}&nbsp;mm{% endunless -%}
+          {%- else -%}
+            {{- attribute_value | escape -}}
+          {%- endif -%}
+        </dd>
+      </div>
+    {%- endif -%}
+  {%- endfor -%}
+{%- endcapture -%}
+{%- if attribute_rows != blank -%}
+  <dl class="product-card-attributes">{{ attribute_rows }}</dl>
+{%- endif -%}

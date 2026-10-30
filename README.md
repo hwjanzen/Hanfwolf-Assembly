@@ -313,6 +313,44 @@ is not enabled by this bootstrap.
 If an attribute fails, the attribute bootstrap stops and retries on the next load;
 definitions already created remain in place and are reused.
 
+### Technical attributes on collection product images
+
+Collection cards overlay Durchmesser, Schlagart and Oberflaeche at the upper
+right of the image. Values come from the referenced metaobjects' `value` fields
+via `custom.durchmesser`, `custom.schlagart` and `custom.oberflaeche`.
+Diameter values are in millimetres; the display adds a diameter symbol and `mm`
+only when not already present. Other values are displayed unchanged and escaped.
+Missing or empty attributes are omitted; cards without images have no overlay.
+The existing collection-image fallback remains supported.
+
+Copy these files to the active theme, merging any theme-specific customizations:
+
+- [main-collection-product-grid.liquid](sections/main-collection-product-grid.liquid)
+- [card-product.liquid](snippets/card-product.liquid)
+- [product-card-attributes.liquid](snippets/product-card-attributes.liquid)
+- [product-card-attributes.css](assets/product-card-attributes.css)
+
+In the theme editor, open the collection template's product grid and the
+**Technische Merkmale im Produktbild** settings. The overlay is enabled by
+default and can be disabled there. Select or upload one icon each for
+Durchmesser, Schlagart and Oberflaeche using the image pickers. These selections
+apply to all products using that collection template, independently of attribute
+values. Use transparent square icons without an enclosing circle; the theme
+draws the green circle. Without a selected icon, its value remains visible as
+text only. No product-level icon metafields or backend changes are required.
+
+The master images should leave the upper right quarter clear and use consistent
+framing. A translucent dark panel keeps white text readable. Icons and text scale
+with card width; long values wrap rather than being truncated. Very narrow
+two-column mobile cards may need the existing one-column mobile setting to keep
+all three rows within the upper half of the image. Check the actual master
+images and longest values in the theme preview before publishing.
+
+The overlay sits outside the hover-image container, does not intercept product
+links and is rendered server-side again after filtering or sorting. Search and
+recommendation cards remain unchanged. No app deploy or reinstall is needed;
+this is a theme update only.
+
 ### Wann welche Befehle ausfuehren
 
 1. Nur Code geaendert (TS/TSX, UI, Preislogik, GraphQL in Routen):
