@@ -8,6 +8,81 @@ const template = readFileSync(
   "utf8",
 );
 
+describe("responsive order summary", () => {
+  function renderSummary(quantity = 1, prepared = true, submitting = false) {
+    type Node = {
+      tag: string;
+      textContent: string;
+      className: string;
+      disabled: boolean;
+      children: Node[];
+      attributes: Record<string, string>;
+      listeners: Record<string, () => void>;
+      setAttribute: (key: string, value: string) => void;
+      appendChild: (node: Node) => void;
+      replaceChildren: () => void;
+      addEventListener: (event: string, callback: () => void) => void;
+    };
+    const node = (tag: string): Node => ({
+      tag, textContent: "", className: "", disabled: false, children: [],
+      attributes: {}, listeners: {},
+      setAttribute(key, value) { this.attributes[key] = value; },
+      appendChild(child) { this.children.push(child); },
+      replaceChildren() { this.children = []; },
+      addEventListener(event, callback) { this.listeners[event] = callback; },
+    });
+    const rows = node("tbody");
+    const total = node("p");
+    const events: string[] = [];
+    const cut = {
+      input: { quantity, lengthMeters: 1, selections: [{ positionId: "end_1", mappingId: "end" }] },
+      prepared: prepared ? { currency: "EUR", unitPriceCents: 5000 } : null,
+      element: { scrollIntoView: () => events.push("scroll") },
+    };
+    runInNewContext(
+      script.slice(script.indexOf("  function renderSummary()"), script.indexOf("  function editCut(")) +
+        "\nrenderSummary();",
+      {
+        reviewRows: rows, totalElement: total, cuts: [cut, cut], submitting,
+        setup: { positions: [{ id: "end_1", label: "Endverbindung 1", options: [{ id: "end", label: "Ende spitz" }] }] },
+        document: { createElement: node },
+        money: (cents: number) => `${(cents / 100).toFixed(2)} EUR`,
+        editCut: () => events.push("edit"),
+        removeCut: () => events.push("remove"),
+      },
+    );
+    return { rows, total, events };
+  }
+
+  it("pairs all values with mobile labels and preserves totals and actions", () => {
+    const { rows, total, events } = renderSummary(2);
+    expect(rows.children).toHaveLength(2);
+    const cells = rows.children[0].children;
+    expect(cells.slice(0, 6).map((cell) => cell.children[0].textContent)).toEqual([
+      "Zuschnitt", "Stück", "Länge je Stück", "Ausführung", "Stückpreis", "Gesamt",
+    ]);
+    expect(cells.slice(0, 6).map((cell) => cell.children[1].textContent)).toEqual([
+      "1", "2", "1,0 m", "Endverbindung 1: Ende spitz", "50.00 EUR", "100.00 EUR",
+    ]);
+    expect(cells.slice(0, 6).every((cell) => cell.children[0].attributes["aria-hidden"] === "true")).toBe(true);
+    expect(total.textContent).toBe("Gesamtsumme: 200.00 EUR");
+    expect(cells[3].className).toBe("rope-summary__configuration");
+    expect(cells[6].className).toBe("rope-summary__actions");
+    cells[6].children[0].listeners.click();
+    cells[6].children[1].listeners.click();
+    expect(events).toEqual(["edit", "scroll", "remove"]);
+  });
+
+  it("preserves pending prices and disables actions while submitting", () => {
+    const { rows, total } = renderSummary(1, false, true);
+    const cells = rows.children[0].children;
+    expect(cells[4].children[1].textContent).toBe("Wird ermittelt");
+    expect(cells[5].children[1].textContent).toBe("Wird ermittelt");
+    expect(total.textContent).toBe("Gesamtsumme wird ermittelt.");
+    expect(cells[6].children.every((button) => button.disabled)).toBe(true);
+  });
+});
+
 describe("rope preview layout", () => {
   it("renders confirmation buttons with German umlauts", () => {
     const renderFunction = script.slice(

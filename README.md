@@ -263,9 +263,15 @@ cart action uses a darker green for readable white text. Intermediate primary
 actions retain their silver finish; disabled actions retain their muted style.
 It preserves the original section styles and all configuration/cart behavior.
 Hidden controls stay hidden, disabled fields remain readable, keyboard focus
-is visible and mobile actions use the available width. Review tables scroll
-inside their panel on narrow screens. Other Dawn sections remain unchanged.
-No backend deployment or app reinstall is needed.
+is visible and mobile actions use the available width. Below 750 px, the review
+shows each cut as a separate card with labeled values, wrapping configuration
+text and full-width edit/remove actions. Column headers remain available to
+assistive technology; desktop keeps the table. The confirmation button also uses
+the full mobile width. Pricing, confirmation and cart behavior are unchanged.
+For the mobile review update, deploy the configurator script and upload
+[seile.liquid](sections/seile.liquid) and
+[rope-configurator-design.css](assets/rope-configurator-design.css) together.
+Other Dawn sections remain unchanged. No app reinstall is needed.
 
 ### Configured variant names in the cart
 
@@ -340,7 +346,12 @@ draws the green circle. Without a selected icon, its value remains visible as
 text only. No product-level icon metafields or backend changes are required.
 
 The master images should leave the upper right quarter clear and use consistent
-framing. A translucent dark panel keeps white text readable. Icons and text scale
+framing. The overlay follows the actual centered `object-fit: contain` image
+bounds, not the surrounding square card: landscape images place it below the
+top white margin, and portrait images keep it inside the narrower image width.
+The card grid and image sizing remain unchanged. The primary image (including
+the collection-image fallback) defines this position even during a hover swap.
+A translucent dark panel keeps white text readable. Icons and text scale
 with card width; long values wrap rather than being truncated. Very narrow
 two-column mobile cards may need the existing one-column mobile setting to keep
 all three rows within the upper half of the image. Check the actual master

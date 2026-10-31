@@ -141,6 +141,8 @@
     var priced = true;
     cuts.forEach(function (cut, index) {
       var row = document.createElement("tr");
+      row.setAttribute("role", "row");
+      var labels = ["Zuschnitt", "Stück", "Länge je Stück", "Ausführung", "Stückpreis", "Gesamt"];
       var cells = [
         String(index + 1),
         String(cut.input.quantity),
@@ -169,12 +171,24 @@
         priced = false;
         cells.push("Wird ermittelt", "Wird ermittelt");
       }
-      cells.forEach(function (value) {
+      cells.forEach(function (value, cellIndex) {
         var cell = document.createElement("td");
-        cell.textContent = value;
+        cell.setAttribute("role", "cell");
+        if (cellIndex === 3) cell.className = "rope-summary__configuration";
+        var label = document.createElement("span");
+        label.className = "rope-summary__label";
+        label.setAttribute("aria-hidden", "true");
+        label.textContent = labels[cellIndex];
+        var content = document.createElement("span");
+        content.className = "rope-summary__value";
+        content.textContent = value;
+        cell.appendChild(label);
+        cell.appendChild(content);
         row.appendChild(cell);
       });
       var actions = document.createElement("td");
+      actions.className = "rope-summary__actions";
+      actions.setAttribute("role", "cell");
       var edit = document.createElement("button");
       edit.type = "button";
       edit.textContent = "Bearbeiten";

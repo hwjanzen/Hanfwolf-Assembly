@@ -2,6 +2,7 @@
   Renders product attribute values with independently selected property icons.
 
   @param {product} card_product - Product whose referenced metaobjects supply the values.
+  @param {number} [image_aspect_ratio] - Primary image width divided by height. Defaults to 1.
   @param {image} [diameter_icon] - Shared diameter icon.
   @param {image} [lay_icon] - Shared lay icon.
   @param {image} [surface_icon] - Shared surface icon.
@@ -54,5 +55,11 @@
   {%- endfor -%}
 {%- endcapture -%}
 {%- if attribute_rows != blank -%}
-  <dl class="product-card-attributes">{{ attribute_rows }}</dl>
+  {%- assign frame_ratio = image_aspect_ratio | default: 1 -%}
+  {%- if frame_ratio <= 0 -%}
+    {%- assign frame_ratio = 1 -%}
+  {%- endif -%}
+  <div class="product-card-attributes-frame" style="--attribute-image-ratio: {{ frame_ratio }};">
+    <dl class="product-card-attributes">{{ attribute_rows }}</dl>
+  </div>
 {%- endif -%}

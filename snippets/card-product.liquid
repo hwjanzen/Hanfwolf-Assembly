@@ -150,15 +150,16 @@
                   >
                 {%- endif -%}
               </div>
+              {%- if show_technical_attributes -%}
+                {% render 'product-card-attributes',
+                  card_product: card_product,
+                  image_aspect_ratio: card_media.aspect_ratio,
+                  diameter_icon: diameter_icon,
+                  lay_icon: lay_icon,
+                  surface_icon: surface_icon
+                %}
+              {%- endif -%}
             </div>
-            {%- if show_technical_attributes -%}
-              {% render 'product-card-attributes',
-                card_product: card_product,
-                diameter_icon: diameter_icon,
-                lay_icon: lay_icon,
-                surface_icon: surface_icon
-              %}
-            {%- endif -%}
           {%- endif -%}
           <div class="card__content">
             <div class="card__information">
